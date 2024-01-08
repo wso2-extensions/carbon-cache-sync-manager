@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"org.wso2.carbon.cache.sync.active.mq.manager"},{"l":"org.wso2.carbon.cache.sync.active.mq.manager.internal"}]
