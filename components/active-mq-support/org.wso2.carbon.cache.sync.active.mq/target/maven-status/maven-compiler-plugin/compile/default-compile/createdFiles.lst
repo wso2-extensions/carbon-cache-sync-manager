@@ -1,0 +1,5 @@
+org/wso2/carbon/cache/sync/active/mq/manager/internal/CacheSyncActiveMQManagerDataHolder.class
+org/wso2/carbon/cache/sync/active/mq/manager/CacheInvalidatorUtils.class
+org/wso2/carbon/cache/sync/active/mq/manager/internal/CacheSyncActiveMQManagerServiceComponent.class
+org/wso2/carbon/cache/sync/active/mq/manager/ConsumerActiveMQCacheInvalidator.class
+org/wso2/carbon/cache/sync/active/mq/manager/ProducerActiveMQCacheInvalidator.class
