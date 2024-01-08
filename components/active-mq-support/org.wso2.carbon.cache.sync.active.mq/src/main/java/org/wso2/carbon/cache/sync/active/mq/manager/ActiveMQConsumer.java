@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.cache.sync.active.mq.manager;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,7 +69,8 @@ public class ActiveMQConsumer {
     public void startService() {
 
         if (!CacheSyncUtils.isActiveMQCacheInvalidatorEnabled()) {
-//            log.debug("ActiveMQ based cache invalidation is not enabled");
+            log.debug("ActiveMQ based cache invalidation is not enabled");
+            // Todo remove this info log.
             log.info(".........................ActiveMQ broker consumer is not enabled..............");
             return;
         }
@@ -89,19 +91,25 @@ public class ActiveMQConsumer {
             consumer.setMessageListener(message -> {
                 if (message instanceof TextMessage) {
                     try {
-                        System.out.println("Consumer Received message: " + ((TextMessage) message).getText());
+                        // Todo remove this info log.
+                        // log.info("Consumer Received message: " + ((TextMessage) message).getText());
                         invalidateCache(((TextMessage) message).getText());
                     }  catch (JMSException e) {
-                        log.error("Error in reading the cache invalidation message. " + e);
+                        String sanitizedErrorMessage = e.getMessage().replace("\n", "")
+                                .replace("\r", "");
+                        log.error("Error in reading the cache invalidation message. " + sanitizedErrorMessage);
                     }
                 }
             });
 
         } catch (Exception e) {
-            log.error("Something went wrong with ActiveMQ consumer " + e);
+            String sanitizedErrorMessage = e.getMessage().replace("\n", "")
+                    .replace("\r", "");
+            log.error("Something went wrong with ActiveMQ consumer " + sanitizedErrorMessage);
         }
     }
 
+    @SuppressFBWarnings
     public void invalidateCache(String message) {
 
         String regexPattern = "ClusterCacheInvalidationRequest\\{tenantId=(?<tenantId>-?\\d+), " +
@@ -114,7 +122,6 @@ public class ActiveMQConsumer {
         if (matcher.find()) {
             String tenantId = matcher.group("tenantId");
             String tenantDomain = matcher.group("tenantDomain");
-            String messageId = matcher.group("messageId");
             String cacheManager = matcher.group("cacheManager");
             String cache = matcher.group("cache");
             String cacheKey = matcher.group("cacheKey");
@@ -134,14 +141,16 @@ public class ActiveMQConsumer {
                         ((CacheImpl) cacheObject).removeLocal(cacheKey);
                     }
                 }
-                System.out.println("Cache invalidated for tenant " + tenantId + " for manager " + cacheManager +
+                // Todo remove this info log.
+                log.info("Cache invalidated for tenant " + tenantId + " for manager " + cacheManager +
                         " with cacheKey " + cacheKey);
 
             } finally {
                 PrivilegedCarbonContext.endTenantFlow();
             }
         } else {
-            System.out.println("Input does not match the pattern.");
+            // Todo remove this info log.
+            log.info("Input does not match the pattern.");
             log.debug("Input doesn't match the expected msg pattern.");
         }
     }

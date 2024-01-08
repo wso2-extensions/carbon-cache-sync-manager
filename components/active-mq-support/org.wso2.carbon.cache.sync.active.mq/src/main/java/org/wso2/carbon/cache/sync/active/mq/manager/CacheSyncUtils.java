@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.cache.sync.active.mq.manager;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
@@ -69,11 +70,14 @@ public class CacheSyncUtils {
         return null;
     }
 
+    /**
+     * Checks if the ActiveMQ Cache Invalidator is enabled.
+     *
+     * @return Boolean representing the enabled state, or null if the property is not set.
+     */
+    @SuppressFBWarnings
     public static Boolean isActiveMQCacheInvalidatorEnabled() {
-
-        if (StringUtils.isNotBlank(IdentityUtil.getProperty(ACTIVEMQ_INVALIDATOR_ENABLED_PROPERTY))) {
-            return Boolean.parseBoolean(IdentityUtil.getProperty(ACTIVEMQ_INVALIDATOR_ENABLED_PROPERTY));
-        }
-        return null;
+        String propertyValue = IdentityUtil.getProperty(ACTIVEMQ_INVALIDATOR_ENABLED_PROPERTY);
+        return StringUtils.isNotBlank(propertyValue) ? Boolean.parseBoolean(propertyValue) : null;
     }
 }

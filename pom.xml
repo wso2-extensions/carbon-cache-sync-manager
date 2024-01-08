@@ -39,6 +39,29 @@
         <tag>HEAD</tag>
     </scm>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${findbugs.annotations.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang.wso2</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>${commons-lang.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-all</artifactId>
+        </dependency>
+    </dependencies>
+
     <distributionManagement>
         <repository>
             <id>nexus-releases</id>
@@ -251,6 +274,7 @@
         <activemq-all.version>5.16.3</activemq-all.version>
         <log4j-api.version>2.14.1</log4j-api.version>
         <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
+        <commons-lang.version>2.6.0.wso2v1</commons-lang.version>
 
         <!--Maven Plugin Version-->
         <maven.scr.plugin.version>1.22.0</maven.scr.plugin.version>
@@ -262,6 +286,7 @@
         <maven.checkstyleplugin.version>3.1.0</maven.checkstyleplugin.version>
         <spotbugs-maven-plugin.version>4.7.2.1</spotbugs-maven-plugin.version>
         <findsecbugs-plugin.version>1.10.1</findsecbugs-plugin.version>
+        <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
     </properties>
 
 </project>

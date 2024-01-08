@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.cache.sync.active.mq.manager;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -27,8 +28,10 @@ import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequest;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.cache.CacheEntryInfo;
 import javax.cache.CacheInvalidationRequestSender;
@@ -53,6 +56,7 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
 
     private static Log log = LogFactory.getLog(ActiveMQProducer.class);
 
+    @SuppressFBWarnings
     @Override
     public void send(CacheEntryInfo cacheEntryInfo) {
 
@@ -93,14 +97,21 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
         ClusterCacheInvalidationRequest clusterCacheInvalidationRequest = new ClusterCacheInvalidationRequest(
                 cacheInfo, tenantDomain, tenantId);
 
-
-        executorService.submit(() -> {
-
+        Future<?> future = executorService.submit(() -> {
             sendInvalidationMessage(CacheSyncUtils.PRODUCER_RETRY_LIMIT, clusterCacheInvalidationRequest);
             executorService.shutdown();
         });
+
+        try {
+            // Optionally, wait for the task to complete
+            future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            // Handle exceptions that occurred during task execution
+            log.error("Something went wrong with activeMQ producer retrying.", e);
+        }
     }
 
+    @SuppressFBWarnings
     private void sendInvalidationMessage(int retryLimit,
                                   ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
 
@@ -129,6 +140,7 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
                 connection.close();
                 break;
             } catch (JMSException e) {
+//                throw new CacheException("Something went wrong with activeMQ producer", e);
                 log.error("Something went wrong with activeMQ producer." + e);
                 numberOfRetries++;
                 try {
@@ -140,8 +152,9 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
         }
     }
 
+    @Override
     public void entryCreated(CacheEntryEvent cacheEntryEvent) throws CacheEntryListenerException {
-
+      // No need to send invalidation message for new cache entries.
     }
 
     @Override
