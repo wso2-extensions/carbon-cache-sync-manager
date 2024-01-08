@@ -20,13 +20,13 @@ package org.wso2.carbon.cache.sync.active.mq.manager.internal;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.cache.sync.active.mq.manager.ConsumerActiveMQCacheInvalidator;
-import org.wso2.carbon.cache.sync.active.mq.manager.ProducerActiveMQCacheInvalidator;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.wso2.carbon.cache.sync.active.mq.manager.CacheInvalidatorUtils;
+import org.wso2.carbon.cache.sync.active.mq.manager.ActiveMQConsumer;
+import org.wso2.carbon.cache.sync.active.mq.manager.ActiveMQProducer;
+import org.wso2.carbon.cache.sync.active.mq.manager.CacheSyncUtils;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -37,6 +37,9 @@ import javax.cache.event.CacheEntryListener;
 import javax.cache.event.CacheEntryRemovedListener;
 import javax.cache.event.CacheEntryUpdatedListener;
 
+/**
+ * Service component for the ActiveMQ cache manager.
+ */
 @Component(
         name = "org.wso2.carbon.cache.sync.active.mq.manager.CacheSyncActiveMQManagerServiceComponent",
         immediate = true
@@ -54,20 +57,17 @@ public class CacheSyncActiveMQManagerServiceComponent {
     @Activate
     protected void activate(ComponentContext context) {
 
-        //register the custom listener as an OSGI service.
-
-        ProducerActiveMQCacheInvalidator producer = new ProducerActiveMQCacheInvalidator();
-
+        ActiveMQProducer producer = new ActiveMQProducer();
         serviceRegistration1 = context.getBundleContext().registerService(CacheEntryListener.class.getName(),
-                producer,null);
-        serviceRegistration2 = context.getBundleContext().registerService(CacheInvalidationRequestSender.class.getName(),
-                producer,null);
+                producer, null);
+        serviceRegistration2 = context.getBundleContext().registerService(
+                CacheInvalidationRequestSender.class.getName(), producer, null);
         serviceRegistration3 = context.getBundleContext().registerService(CacheEntryRemovedListener.class.getName(),
-                producer,null);
+                producer, null);
         serviceRegistration4 = context.getBundleContext().registerService(CacheEntryUpdatedListener.class.getName(),
-                producer,null);
+                producer, null);
 
-        // Start polling for ActiveMQCacheInvalidatorEnabled
+        // Continue polling until ActiveMQ Manager configurations are fully updated.
         startPollingForActiveMQCacheInvalidator();
     }
 
@@ -75,8 +75,8 @@ public class CacheSyncActiveMQManagerServiceComponent {
 
         scheduler.scheduleWithFixedDelay(() -> {
             try {
-                if (CacheInvalidatorUtils.isActiveMQCacheInvalidatorEnabled() != null) {
-                    ConsumerActiveMQCacheInvalidator.getInstance().startService();
+                if (CacheSyncUtils.isActiveMQCacheInvalidatorEnabled() != null) {
+                    ActiveMQConsumer.getInstance().startService();
                     log.info("ActiveMQ Cache Invalidator Service bundle activated successfully.");
                     // Stop polling once activated.
                     scheduler.shutdown();
@@ -91,7 +91,6 @@ public class CacheSyncActiveMQManagerServiceComponent {
     protected void deactivate(ComponentContext context) {
 
         // Cleanup resources.
-        ConsumerActiveMQCacheInvalidator.getInstance().cleanup();
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdownNow();
         }
@@ -113,5 +112,4 @@ public class CacheSyncActiveMQManagerServiceComponent {
             log.debug("ActiveMQ Cache Invalidator Service bundle is deactivated.");
         }
     }
-
 }

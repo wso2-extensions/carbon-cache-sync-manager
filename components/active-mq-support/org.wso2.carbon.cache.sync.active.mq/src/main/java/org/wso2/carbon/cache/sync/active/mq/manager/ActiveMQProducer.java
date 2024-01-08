@@ -27,6 +27,9 @@ import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequest;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import javax.cache.CacheEntryInfo;
 import javax.cache.CacheInvalidationRequestSender;
 import javax.cache.event.CacheEntryCreatedListener;
@@ -42,10 +45,13 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
-public class ProducerActiveMQCacheInvalidator implements CacheEntryRemovedListener, CacheEntryUpdatedListener,
+/**
+ * This class contains the logic for sending cache invalidation message.
+ */
+public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUpdatedListener,
         CacheEntryCreatedListener, CacheInvalidationRequestSender {
 
-    private static Log log = LogFactory.getLog(ProducerActiveMQCacheInvalidator.class);
+    private static Log log = LogFactory.getLog(ActiveMQProducer.class);
 
     @Override
     public void send(CacheEntryInfo cacheEntryInfo) {
@@ -53,7 +59,7 @@ public class ProducerActiveMQCacheInvalidator implements CacheEntryRemovedListen
         String tenantDomain = cacheEntryInfo.getTenantDomain();
         int tenantId = cacheEntryInfo.getTenantId();
 
-        if (!CacheInvalidatorUtils.isActiveMQCacheInvalidatorEnabled()) {
+        if (!CacheSyncUtils.isActiveMQCacheInvalidatorEnabled()) {
             log.debug("ActiveMQ based cache invalidation is not enabled");
             return;
         }
@@ -70,14 +76,15 @@ public class ProducerActiveMQCacheInvalidator implements CacheEntryRemovedListen
             return;
         }
 
-        int numberOfRetries = 0;
         if (log.isDebugEnabled()) {
             log.debug("Sending cache invalidation message to other cluster nodes for '" + cacheEntryInfo.getCacheKey() +
                     "' of the cache '" + cacheEntryInfo.getCacheName() + "' of the cache manager '" +
                     cacheEntryInfo.getCacheManagerName() + "'");
         }
 
-        //Send the cluster message
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        // Send the cluster message.
         ClusterCacheInvalidationRequest.CacheInfo cacheInfo =
                 new ClusterCacheInvalidationRequest.CacheInfo(cacheEntryInfo.getCacheManagerName(),
                         cacheEntryInfo.getCacheName(),
@@ -86,34 +93,35 @@ public class ProducerActiveMQCacheInvalidator implements CacheEntryRemovedListen
         ClusterCacheInvalidationRequest clusterCacheInvalidationRequest = new ClusterCacheInvalidationRequest(
                 cacheInfo, tenantDomain, tenantId);
 
-        while (numberOfRetries < 60) {
+
+        executorService.submit(() -> {
+
+            sendInvalidationMessage(CacheSyncUtils.PRODUCER_RETRY_LIMIT, clusterCacheInvalidationRequest);
+            executorService.shutdown();
+        });
+    }
+
+    private void sendInvalidationMessage(int retryLimit,
+                                  ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
+
+        int numberOfRetries = 0;
+        while (numberOfRetries < retryLimit) {
 
             ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
-                    CacheInvalidatorUtils.getActiveMQBrokerUrl());
-
-//            System.out.println(getActiveMQBrokerUrl());
-//            System.out.println(isActiveMQCacheInvalidatorEnabled());
-//            System.out.println(getCacheInvalidationTopic());
-//            System.out.println(getProducerName());
+                    CacheSyncUtils.getActiveMQBrokerUrl());
 
             try {
-                // Create a connection
                 Connection connection = connectionFactory.createConnection();
                 connection.start();
 
-                // Create a session
                 Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-                // Create a topic
-                Topic topic = session.createTopic(CacheInvalidatorUtils.getCacheInvalidationTopic());
-
-                // Create a message producer
+                Topic topic = session.createTopic(CacheSyncUtils.getCacheInvalidationTopic());
                 MessageProducer producer = session.createProducer(topic);
-
-                // Create and send a message from the publisher
                 TextMessage message = session.createTextMessage(clusterCacheInvalidationRequest.toString());
-                message.setStringProperty("sender", CacheInvalidatorUtils.getProducerName());
+                message.setStringProperty("sender", CacheSyncUtils.getProducerName());
                 producer.send(message);
+                log.info("......................sending from producer...................." +
+                        clusterCacheInvalidationRequest.toString());
 
                 // Clean up resources
                 producer.close();
@@ -130,7 +138,6 @@ public class ProducerActiveMQCacheInvalidator implements CacheEntryRemovedListen
                 }
             }
         }
-
     }
 
     public void entryCreated(CacheEntryEvent cacheEntryEvent) throws CacheEntryListenerException {

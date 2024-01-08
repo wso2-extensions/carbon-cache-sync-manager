@@ -23,18 +23,6 @@
         <artifactId>wso2</artifactId>
         <version>1.4</version>
     </parent>
-    <dependencies>
-        <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>javax.cache.wso2</artifactId>
-            <version>4.7.0-beta2</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-all</artifactId>
-        </dependency>
-    </dependencies>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.cache.sync.manager</groupId>
@@ -88,30 +76,15 @@
             <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>activemq-all</artifactId>
-                <version>5.16.3</version>
+                <version>${activemq-all.version}</version>
             </dependency>
-            <!-- log4j dependency -->
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-api</artifactId>
-                <version>2.14.1</version>
+                <version>${log4j-api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-
-
-<!--    <repositories>-->
-<!--        <repository>-->
-<!--            <id>wso2-nexus</id>-->
-<!--            <name>WSO2 internal Repository</name>-->
-<!--            <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>-->
-<!--            <releases>-->
-<!--                <updatePolicy>daily</updatePolicy>-->
-<!--                <checksumPolicy>ignore</checksumPolicy>-->
-<!--            </releases>-->
-<!--        </repository>-->
-<!--    </repositories>-->
 
     <build>
         <pluginManagement>
@@ -265,8 +238,6 @@
     </build>
 
     <properties>
-        <maven.scr.plugin.version>1.22.0</maven.scr.plugin.version>
-        <maven.bundle.plugin.version>3.2.0</maven.bundle.plugin.version>
         <osgi.framework.imp.pkg.version.range>[1.7.0, 2.0.0)</osgi.framework.imp.pkg.version.range>
         <osgi.service.component.imp.pkg.version.range>[1.2.0, 2.0.0)</osgi.service.component.imp.pkg.version.range>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -277,15 +248,17 @@
         <carbon.identity.framework.version>5.18.187</carbon.identity.framework.version>
         <carbon.identity.framework.imp.pkg.version.range>[5.17.5, 6.0.0)
         </carbon.identity.framework.imp.pkg.version.range>
-
+        <activemq-all.version>5.16.3</activemq-all.version>
+        <log4j-api.version>2.14.1</log4j-api.version>
+        <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
 
         <!--Maven Plugin Version-->
-        <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
+        <maven.scr.plugin.version>1.22.0</maven.scr.plugin.version>
+        <maven.bundle.plugin.version>3.2.0</maven.bundle.plugin.version>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
         <maven.bundle.plugin.version>3.2.0</maven.bundle.plugin.version>
         <maven.buildnumber.plugin.version>1.4</maven.buildnumber.plugin.version>
         <maven-war-plugin.version>3.3.1</maven-war-plugin.version>
-
         <maven.checkstyleplugin.version>3.1.0</maven.checkstyleplugin.version>
         <spotbugs-maven-plugin.version>4.7.2.1</spotbugs-maven-plugin.version>
         <findsecbugs-plugin.version>1.10.1</findsecbugs-plugin.version>

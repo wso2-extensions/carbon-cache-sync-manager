@@ -22,12 +22,9 @@ import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
 /**
- * Util class for the ActiveMQ Cache Invalidator Service.
+ * Util class for the ActiveMQ cache manager Service.
  */
-public class CacheInvalidatorUtils {
-
-    // Broker connection URL.
-    public static final String BROKER_URL = "tcp://localhost:61616";
+public class CacheSyncUtils {
 
     public static final String BROKER_URL_PROPERTY = "CacheInvalidator.ActiveMQ.BrokerURL";
     public static final String ACTIVEMQ_INVALIDATOR_ENABLED_PROPERTY = "CacheInvalidator.ActiveMQ.Enabled";
@@ -40,13 +37,11 @@ public class CacheInvalidatorUtils {
     // Cache name prefix of clear all.
     public static final String CLEAR_ALL_PREFIX = "$__clear__all__$.";
 
-    // Topic name.
-    public static final String TOPIC_NAME = "CacheTopic";
+    // Default producer retry limit.
+    public static final int PRODUCER_RETRY_LIMIT = 30;
 
-    // Sender name.
-    public static final String PRODUCER_1 = "producer1";
 
-    private CacheInvalidatorUtils() {
+    private CacheSyncUtils() {
 
     }
 

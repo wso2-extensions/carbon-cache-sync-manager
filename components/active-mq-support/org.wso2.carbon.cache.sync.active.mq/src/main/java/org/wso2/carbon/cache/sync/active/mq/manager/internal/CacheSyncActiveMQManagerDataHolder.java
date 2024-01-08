@@ -19,7 +19,7 @@
 package org.wso2.carbon.cache.sync.active.mq.manager.internal;
 
 /**
- * Data holder for the ActiveMQCacheManager.
+ * Data holder for the ActiveMQ cache manager.
  */
 public class CacheSyncActiveMQManagerDataHolder {
 
