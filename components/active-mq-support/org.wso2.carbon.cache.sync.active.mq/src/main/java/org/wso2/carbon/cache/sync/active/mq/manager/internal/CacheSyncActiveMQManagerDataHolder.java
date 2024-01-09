@@ -25,10 +25,8 @@ public class CacheSyncActiveMQManagerDataHolder {
 
     private static CacheSyncActiveMQManagerDataHolder instance = new CacheSyncActiveMQManagerDataHolder();
 
-
     public static CacheSyncActiveMQManagerDataHolder getInstance() {
 
         return instance;
     }
-
 }

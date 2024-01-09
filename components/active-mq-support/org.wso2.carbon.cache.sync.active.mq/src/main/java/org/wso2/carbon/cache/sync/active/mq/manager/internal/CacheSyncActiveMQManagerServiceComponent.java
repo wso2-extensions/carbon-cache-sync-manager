@@ -46,26 +46,25 @@ import javax.cache.event.CacheEntryUpdatedListener;
 )
 public class CacheSyncActiveMQManagerServiceComponent {
 
-    private static Log log = LogFactory.getLog(CacheSyncActiveMQManagerServiceComponent.class);
-    private ServiceRegistration serviceRegistration1 = null;
-    private ServiceRegistration serviceRegistration2 = null;
-    private ServiceRegistration serviceRegistration3 = null;
-    private ServiceRegistration serviceRegistration4 = null;
+    private static final Log log = LogFactory.getLog(CacheSyncActiveMQManagerServiceComponent.class);
+    private ServiceRegistration serviceRegistrationForCacheEntry = null;
+    private ServiceRegistration serviceRegistrationForRequestSend = null;
+    private ServiceRegistration serviceRegistrationForCacheRemoval = null;
+    private ServiceRegistration serviceRegistrationForCacheUpdate = null;
     private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-
 
     @Activate
     protected void activate(ComponentContext context) {
 
         ActiveMQProducer producer = new ActiveMQProducer();
-        serviceRegistration1 = context.getBundleContext().registerService(CacheEntryListener.class.getName(),
-                producer, null);
-        serviceRegistration2 = context.getBundleContext().registerService(
+        serviceRegistrationForCacheEntry = context.getBundleContext().registerService(
+                CacheEntryListener.class.getName(), producer, null);
+        serviceRegistrationForRequestSend = context.getBundleContext().registerService(
                 CacheInvalidationRequestSender.class.getName(), producer, null);
-        serviceRegistration3 = context.getBundleContext().registerService(CacheEntryRemovedListener.class.getName(),
-                producer, null);
-        serviceRegistration4 = context.getBundleContext().registerService(CacheEntryUpdatedListener.class.getName(),
-                producer, null);
+        serviceRegistrationForCacheRemoval = context.getBundleContext().registerService(
+                CacheEntryRemovedListener.class.getName(), producer, null);
+        serviceRegistrationForCacheUpdate = context.getBundleContext().registerService(
+                CacheEntryUpdatedListener.class.getName(), producer, null);
 
         // Continue polling until ActiveMQ Manager configurations are fully updated.
         startPollingForActiveMQCacheInvalidator();
@@ -78,7 +77,6 @@ public class CacheSyncActiveMQManagerServiceComponent {
                 if (CacheSyncUtils.isActiveMQCacheInvalidatorEnabled() != null) {
                     ActiveMQConsumer.getInstance().startService();
                     log.info("ActiveMQ Cache Invalidator Service bundle activated successfully.");
-                    // Stop polling once activated.
                     scheduler.shutdown();
                 }
             } catch (Exception e) {
@@ -94,19 +92,18 @@ public class CacheSyncActiveMQManagerServiceComponent {
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdownNow();
         }
-
         // Unregistering the listener service.
-        if (serviceRegistration1 != null) {
-            serviceRegistration1.unregister();
+        if (serviceRegistrationForCacheEntry != null) {
+            serviceRegistrationForCacheEntry.unregister();
         }
-        if (serviceRegistration2 != null) {
-            serviceRegistration2.unregister();
+        if (serviceRegistrationForRequestSend != null) {
+            serviceRegistrationForRequestSend.unregister();
         }
-        if (serviceRegistration3 != null) {
-            serviceRegistration3.unregister();
+        if (serviceRegistrationForCacheRemoval != null) {
+            serviceRegistrationForCacheRemoval.unregister();
         }
-        if (serviceRegistration4 != null) {
-            serviceRegistration4.unregister();
+        if (serviceRegistrationForCacheUpdate != null) {
+            serviceRegistrationForCacheUpdate.unregister();
         }
         if (log.isDebugEnabled()) {
             log.debug("ActiveMQ Cache Invalidator Service bundle is deactivated.");
