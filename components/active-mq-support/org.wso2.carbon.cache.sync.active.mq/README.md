@@ -16,7 +16,7 @@ This component provides the ActiveMQ support for the cache invalidator.
    </CacheInvalidator>
    {% endif %}
 ```
-3. Then add the following config 
+3. Then add the following config in the `deployment.toml` file
 ```yaml
 [cache_invalidator.active_mq]
 broker_url="failover:tcp://localhost:61616"

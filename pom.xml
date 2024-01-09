@@ -261,16 +261,10 @@
     </build>
 
     <properties>
-        <osgi.framework.imp.pkg.version.range>[1.7.0, 2.0.0)</osgi.framework.imp.pkg.version.range>
-        <osgi.service.component.imp.pkg.version.range>[1.2.0, 2.0.0)</osgi.service.component.imp.pkg.version.range>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <commons-collections.wso2.osgi.version.range>[3.2.0,4.0.0)</commons-collections.wso2.osgi.version.range>
         <org.apache.felix.scr.ds-annotations.version>1.2.10</org.apache.felix.scr.ds-annotations.version>
         <org.wso2.carbon.user.core.version>4.7.0-beta2</org.wso2.carbon.user.core.version>
-        <org.wso2.carbon.user.core.version.range>[4.0.0,5.0.0)</org.wso2.carbon.user.core.version.range>
         <carbon.identity.framework.version>5.18.187</carbon.identity.framework.version>
-        <carbon.identity.framework.imp.pkg.version.range>[5.17.5, 6.0.0)
-        </carbon.identity.framework.imp.pkg.version.range>
         <activemq-all.version>5.16.3</activemq-all.version>
         <log4j-api.version>2.14.1</log4j-api.version>
         <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
@@ -287,6 +281,18 @@
         <spotbugs-maven-plugin.version>4.7.2.1</spotbugs-maven-plugin.version>
         <findsecbugs-plugin.version>1.10.1</findsecbugs-plugin.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
+
+        <!--Import Range-->
+        <commons-lang.version.range>[2.6.0,3.0.0)</commons-lang.version.range>
+        <commons-logging.osgi.version.range>[1.2,2.0)</commons-logging.osgi.version.range>
+        <osgi.framework.imp.pkg.version.range>[1.9.0, 2.0.0)</osgi.framework.imp.pkg.version.range>
+        <osgi.service.component.imp.pkg.version.range>[1.2.0, 2.0.0)</osgi.service.component.imp.pkg.version.range>
+        <carbon.identity.framework.imp.pkg.version.range>[5.17.5, 6.0.0)
+        </carbon.identity.framework.imp.pkg.version.range>
+        <commons-collections.wso2.osgi.version.range>[3.2.0,4.0.0)</commons-collections.wso2.osgi.version.range>
+        <org.wso2.carbon.user.core.version.range>[4.0.0,5.0.0)</org.wso2.carbon.user.core.version.range>
+        <javax.cache.imp.range>[1.0,2)</javax.cache.imp.range>
+        <carbon.kernel.imp.pkg.version.range>[4.6.0, 5.0.0)</carbon.kernel.imp.pkg.version.range>
     </properties>
 
 </project>
