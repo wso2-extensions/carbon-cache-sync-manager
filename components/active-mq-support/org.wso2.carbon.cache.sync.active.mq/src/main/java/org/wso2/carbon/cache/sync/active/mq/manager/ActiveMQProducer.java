@@ -28,10 +28,8 @@ import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequest;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import javax.cache.CacheEntryInfo;
 import javax.cache.CacheInvalidationRequestSender;
@@ -54,7 +52,8 @@ import javax.jms.Topic;
 public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUpdatedListener,
         CacheEntryCreatedListener, CacheInvalidationRequestSender {
 
-    private static Log log = LogFactory.getLog(ActiveMQProducer.class);
+    private static final Log log = LogFactory.getLog(ActiveMQProducer.class);
+    private static final String SENDER = "sender";
 
     @SuppressFBWarnings
     @Override
@@ -97,57 +96,48 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
         ClusterCacheInvalidationRequest clusterCacheInvalidationRequest = new ClusterCacheInvalidationRequest(
                 cacheInfo, tenantDomain, tenantId);
 
-        Future<?> future = executorService.submit(() -> {
+        // Send cache invalidation message asynchronously.
+        executorService.submit(() -> {
             sendInvalidationMessage(CacheSyncUtils.PRODUCER_RETRY_LIMIT, clusterCacheInvalidationRequest);
             executorService.shutdown();
         });
-
-        try {
-            // Optionally, wait for the task to complete
-            future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            // Handle exceptions that occurred during task execution
-            log.error("Something went wrong with activeMQ producer retrying.", e);
-        }
     }
 
     @SuppressFBWarnings
     private void sendInvalidationMessage(int retryLimit,
                                   ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
 
-        int numberOfRetries = 0;
-        while (numberOfRetries < retryLimit) {
+        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(CacheSyncUtils.getActiveMQBrokerUrl());
+        Connection connection = null;
+        Session session = null;
+        MessageProducer producer = null;
 
-            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
-                    CacheSyncUtils.getActiveMQBrokerUrl());
+        try {
+            connection = connectionFactory.createConnection();
+            connection.start();
 
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Topic topic = session.createTopic(CacheSyncUtils.getCacheInvalidationTopic());
+            producer = session.createProducer(topic);
+
+            TextMessage message = session.createTextMessage(clusterCacheInvalidationRequest.toString());
+            message.setStringProperty(SENDER, CacheSyncUtils.getProducerName());
+            producer.send(message);
+        } catch (JMSException e) {
+            log.error("Something went wrong with ActiveMQ producer connection." + e);
+        } finally {
             try {
-                Connection connection = connectionFactory.createConnection();
-                connection.start();
-
-                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                Topic topic = session.createTopic(CacheSyncUtils.getCacheInvalidationTopic());
-                MessageProducer producer = session.createProducer(topic);
-                TextMessage message = session.createTextMessage(clusterCacheInvalidationRequest.toString());
-                message.setStringProperty("sender", CacheSyncUtils.getProducerName());
-                producer.send(message);
-                log.info("......................sending from producer...................." +
-                        clusterCacheInvalidationRequest.toString());
-
-                // Clean up resources
-                producer.close();
-                session.close();
-                connection.close();
-                break;
-            } catch (JMSException e) {
-//                throw new CacheException("Something went wrong with activeMQ producer", e);
-                log.error("Something went wrong with activeMQ producer." + e);
-                numberOfRetries++;
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException ignored) {
-                    log.debug("Thread sleeping interrupted for ActiveMQ producer.");
+                if (producer != null) {
+                    producer.close();
                 }
+                if (session != null) {
+                    session.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (JMSException e) {
+                log.error("Error closing ActiveMQ resources", e);
             }
         }
     }

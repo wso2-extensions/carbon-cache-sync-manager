@@ -47,7 +47,7 @@ import static org.wso2.carbon.cache.sync.active.mq.manager.CacheSyncUtils.getCac
  */
 public class ActiveMQConsumer {
 
-    private static Log log = LogFactory.getLog(ActiveMQConsumer.class);
+    private static final Log log = LogFactory.getLog(ActiveMQConsumer.class);
 
     private static volatile ActiveMQConsumer instance;
 
