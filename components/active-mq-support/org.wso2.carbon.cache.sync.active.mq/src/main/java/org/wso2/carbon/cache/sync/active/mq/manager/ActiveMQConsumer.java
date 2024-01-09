@@ -70,8 +70,6 @@ public class ActiveMQConsumer {
 
         if (!CacheSyncUtils.isActiveMQCacheInvalidatorEnabled()) {
             log.debug("ActiveMQ based cache invalidation is not enabled");
-            // Todo remove this info log.
-            log.info(".........................ActiveMQ broker consumer is not enabled..............");
             return;
         }
 
@@ -91,8 +89,6 @@ public class ActiveMQConsumer {
             consumer.setMessageListener(message -> {
                 if (message instanceof TextMessage) {
                     try {
-                        // Todo remove this info log.
-                        // log.info("Consumer Received message: " + ((TextMessage) message).getText());
                         invalidateCache(((TextMessage) message).getText());
                     }  catch (JMSException e) {
                         String sanitizedErrorMessage = e.getMessage().replace("\n", "")
@@ -141,16 +137,10 @@ public class ActiveMQConsumer {
                         ((CacheImpl) cacheObject).removeLocal(cacheKey);
                     }
                 }
-                // Todo remove this info log.
-                log.info("Cache invalidated for tenant " + tenantId + " for manager " + cacheManager +
-                        " with cacheKey " + cacheKey);
-
             } finally {
                 PrivilegedCarbonContext.endTenantFlow();
             }
         } else {
-            // Todo remove this info log.
-            log.info("Input does not match the pattern.");
             log.debug("Input doesn't match the expected msg pattern.");
         }
     }

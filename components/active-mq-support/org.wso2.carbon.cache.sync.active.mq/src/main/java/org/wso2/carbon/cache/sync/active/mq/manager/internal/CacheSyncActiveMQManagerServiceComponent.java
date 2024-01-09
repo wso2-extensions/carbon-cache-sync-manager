@@ -76,11 +76,11 @@ public class CacheSyncActiveMQManagerServiceComponent {
             try {
                 if (CacheSyncUtils.isActiveMQCacheInvalidatorEnabled() != null) {
                     ActiveMQConsumer.getInstance().startService();
-                    log.info("ActiveMQ Cache Invalidator Service bundle activated successfully.");
+                    log.info("Cache Sync ActiveMQ Manager Service bundle activated successfully.");
                     scheduler.shutdown();
                 }
             } catch (Exception e) {
-                log.error("Error while checking ActiveMQ Cache Invalidator status", e);
+                log.error("Error while checking Cache Sync ActiveMQ Manager status", e);
             }
             // Check every 10 seconds, start immediately.
         }, 0, 10, TimeUnit.SECONDS);
@@ -106,7 +106,7 @@ public class CacheSyncActiveMQManagerServiceComponent {
             serviceRegistrationForCacheUpdate.unregister();
         }
         if (log.isDebugEnabled()) {
-            log.debug("ActiveMQ Cache Invalidator Service bundle is deactivated.");
+            log.debug("Cache Sync ActiveMQ Manager Service bundle is deactivated.");
         }
     }
 }
