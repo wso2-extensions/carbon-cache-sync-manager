@@ -24,12 +24,12 @@
         <groupId>org.wso2.carbon.cache.sync.manager</groupId>
         <artifactId>carbon-cache-sync-manager</artifactId>
         <relativePath>../../../pom.xml</relativePath>
-        <version>1.0.0</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.wso2.carbon.cache.sync.manager</groupId>
     <artifactId>org.wso2.carbon.cache.sync.active.mq.manager</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <dependencies>
