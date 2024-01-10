@@ -22,8 +22,8 @@
 
     <parent>
         <groupId>org.wso2.carbon.cache.sync.manager</groupId>
-        <artifactId>carbon-cache-sync-manager</artifactId>
-        <relativePath>../../../pom.xml</relativePath>
+        <artifactId>active-mq-support</artifactId>
+        <relativePath>../pom.xml</relativePath>
         <version>1.0.1-SNAPSHOT</version>
     </parent>
 
