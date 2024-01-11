@@ -30,6 +30,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.cache.CacheEntryInfo;
 import javax.cache.CacheInvalidationRequestSender;
@@ -54,6 +55,8 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
 
     private static final Log log = LogFactory.getLog(ActiveMQProducer.class);
     private static final String SENDER = "sender";
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(15);
+
 
     @SuppressFBWarnings
     @Override
@@ -85,8 +88,6 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
                     cacheEntryInfo.getCacheManagerName() + "'");
         }
 
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-
         // Send the cluster message.
         ClusterCacheInvalidationRequest.CacheInfo cacheInfo =
                 new ClusterCacheInvalidationRequest.CacheInfo(cacheEntryInfo.getCacheManagerName(),
@@ -99,7 +100,6 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
         // Send cache invalidation message asynchronously.
         executorService.submit(() -> {
             sendInvalidationMessage(CacheSyncUtils.PRODUCER_RETRY_LIMIT, clusterCacheInvalidationRequest);
-            executorService.shutdown();
         });
     }
 
@@ -165,5 +165,18 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
         int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(true);
         return new CacheEntryInfo(cacheEntryEvent.getSource().getCacheManager().getName(),
                 cacheEntryEvent.getSource().getName(), cacheEntryEvent.getKey(), tenantDomain, tenantId);
+    }
+
+    // Shutdown the thread executor.
+    public static void shutdownExecutorService() {
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }
