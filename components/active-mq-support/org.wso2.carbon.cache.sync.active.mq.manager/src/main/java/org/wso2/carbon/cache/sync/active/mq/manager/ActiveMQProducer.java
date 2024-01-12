@@ -90,7 +90,8 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
 
         // Send the cluster message.
         ClusterCacheInvalidationRequest.CacheInfo cacheInfo =
-                new ClusterCacheInvalidationRequest.CacheInfo(cacheEntryInfo.getCacheManagerName(),
+                new ClusterCacheInvalidationRequest.CacheInfo(
+                        cacheEntryInfo.getCacheManagerName(),
                         cacheEntryInfo.getCacheName(),
                         cacheEntryInfo.getCacheKey());
 
@@ -99,13 +100,12 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
 
         // Send cache invalidation message asynchronously.
         executorService.submit(() -> {
-            sendInvalidationMessage(CacheSyncUtils.PRODUCER_RETRY_LIMIT, clusterCacheInvalidationRequest);
+            sendInvalidationMessage(clusterCacheInvalidationRequest);
         });
     }
 
     @SuppressFBWarnings
-    private void sendInvalidationMessage(int retryLimit,
-                                  ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
+    private void sendInvalidationMessage(ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
 
         ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(CacheSyncUtils.getActiveMQBrokerUrl());
         Connection connection = null;
