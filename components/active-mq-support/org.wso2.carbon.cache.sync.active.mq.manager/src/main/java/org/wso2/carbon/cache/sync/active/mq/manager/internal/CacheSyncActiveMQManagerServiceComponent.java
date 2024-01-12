@@ -92,6 +92,8 @@ public class CacheSyncActiveMQManagerServiceComponent {
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdownNow();
         }
+        ActiveMQProducer.shutdownExecutorService();
+
         // Unregistering the listener service.
         if (serviceRegistrationForCacheEntry != null) {
             serviceRegistrationForCacheEntry.unregister();
