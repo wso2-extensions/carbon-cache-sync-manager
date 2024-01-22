@@ -20,7 +20,6 @@ package org.wso2.carbon.cache.sync.active.mq.manager;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang.StringUtils;
-import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequest;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
 /**

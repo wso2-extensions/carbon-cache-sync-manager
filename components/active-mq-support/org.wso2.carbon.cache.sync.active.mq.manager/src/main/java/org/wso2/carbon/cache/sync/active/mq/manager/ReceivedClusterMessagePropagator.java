@@ -23,7 +23,10 @@ import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequest;
 
 import javax.cache.CacheInvalidationRequestPropagator;
 
-public class ReceivedClusterMessagePropagator implements CacheInvalidationRequestPropagator{
+/**
+ * This class contains the logic for propagating cache invalidation message from local to multi cluster.
+ */
+public class ReceivedClusterMessagePropagator implements CacheInvalidationRequestPropagator {
 
     private static final Log log = LogFactory.getLog(ReceivedClusterMessagePropagator.class);
 
