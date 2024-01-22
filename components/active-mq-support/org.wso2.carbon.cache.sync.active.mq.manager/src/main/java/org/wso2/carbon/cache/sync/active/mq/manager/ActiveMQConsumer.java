@@ -91,7 +91,7 @@ public class ActiveMQConsumer {
             // Message listener for the subscriber.
             consumer.setMessageListener(message -> {
                 if (message instanceof TextMessage) {
-                    log.debug("Received cache invalidation message " + message);
+                    log.debug("Received cache invalidation message.");
                     try {
                         invalidateCache(((TextMessage) message).getText());
                     }  catch (JMSException e) {
@@ -151,6 +151,7 @@ public class ActiveMQConsumer {
                 PrivilegedCarbonContext.endTenantFlow();
             }
             if (CacheSyncUtils.getRunInHybridModeProperty()) {
+
                 CacheEntryInfo  cacheEntryInfo = new CacheEntryInfo(cacheManager,
                         cache, cacheKey, tenantDomain, Integer.valueOf(tenantId));
                 log.debug("Sending cache invalidation message for local clustering " + cacheEntryInfo);

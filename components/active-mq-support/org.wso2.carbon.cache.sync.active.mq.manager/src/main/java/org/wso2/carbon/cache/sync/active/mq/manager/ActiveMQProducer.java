@@ -97,10 +97,18 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
 
         ClusterCacheInvalidationRequest clusterCacheInvalidationRequest = new ClusterCacheInvalidationRequest(
                 cacheInfo, tenantDomain, tenantId);
+
+        // Send invalidation message in async manner.
         sendAsyncInvalidation(clusterCacheInvalidationRequest);
     }
 
+    @SuppressFBWarnings
     public void sendAsyncInvalidation(ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
+
+        if (!CacheSyncUtils.isActiveMQCacheInvalidatorEnabled()) {
+            log.debug("ActiveMQ based cache invalidation is not enabled");
+            return;
+        }
 
         // Send cache invalidation message asynchronously.
         executorService.submit(() -> {
