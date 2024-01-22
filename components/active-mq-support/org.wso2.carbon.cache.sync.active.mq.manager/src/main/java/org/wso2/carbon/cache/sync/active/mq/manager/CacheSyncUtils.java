@@ -20,6 +20,7 @@ package org.wso2.carbon.cache.sync.active.mq.manager;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang.StringUtils;
+import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequest;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
 /**
@@ -31,6 +32,7 @@ public class CacheSyncUtils {
     public static final String ACTIVEMQ_INVALIDATOR_ENABLED_PROPERTY = "CacheInvalidator.ActiveMQ.Enabled";
     public static final String ACTIVEMQ_CACHE_TOPIC_PROPERTY = "CacheInvalidator.ActiveMQ.TopicName";
     public static final String ACTIVEMQ_PRODUCER_NAME_PROPERTY = "CacheInvalidator.ActiveMQ.ProducerName";
+    public static final String RUN_IN_HYBRID_MODE_PROPERTY = "CacheInvalidator.ActiveMQ.HybridMode";
 
     // Cache name prefix of local cache.
     public static final String LOCAL_CACHE_PREFIX = "$__local__$.";
@@ -68,6 +70,14 @@ public class CacheSyncUtils {
             return IdentityUtil.getProperty(ACTIVEMQ_CACHE_TOPIC_PROPERTY).trim();
         }
         return null;
+    }
+
+    public static boolean getRunInHybridModeProperty() {
+
+        if (StringUtils.isNotBlank(IdentityUtil.getProperty(RUN_IN_HYBRID_MODE_PROPERTY))) {
+            return Boolean.parseBoolean(IdentityUtil.getProperty(RUN_IN_HYBRID_MODE_PROPERTY).trim());
+        }
+        return true;
     }
 
     /**

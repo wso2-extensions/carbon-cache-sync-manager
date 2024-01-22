@@ -27,11 +27,13 @@ import org.osgi.service.component.annotations.Component;
 import org.wso2.carbon.cache.sync.active.mq.manager.ActiveMQConsumer;
 import org.wso2.carbon.cache.sync.active.mq.manager.ActiveMQProducer;
 import org.wso2.carbon.cache.sync.active.mq.manager.CacheSyncUtils;
+import org.wso2.carbon.cache.sync.active.mq.manager.ReceivedClusterMessagePropagator;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.cache.CacheInvalidationRequestPropagator;
 import javax.cache.CacheInvalidationRequestSender;
 import javax.cache.event.CacheEntryListener;
 import javax.cache.event.CacheEntryRemovedListener;
@@ -65,6 +67,10 @@ public class CacheSyncActiveMQManagerServiceComponent {
                 CacheEntryRemovedListener.class.getName(), producer, null);
         serviceRegistrationForCacheUpdate = context.getBundleContext().registerService(
                 CacheEntryUpdatedListener.class.getName(), producer, null);
+
+
+        context.getBundleContext().registerService(CacheInvalidationRequestPropagator.class.getName(),
+                new ReceivedClusterMessagePropagator(), null);
 
         // Continue polling until ActiveMQ Manager configurations are fully updated.
         startPollingForActiveMQCacheInvalidator();
