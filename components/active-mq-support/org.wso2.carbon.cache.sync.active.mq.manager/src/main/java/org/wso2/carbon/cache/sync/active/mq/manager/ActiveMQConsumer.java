@@ -15,11 +15,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.carbon.cache.sync.active.mq.manager;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.caching.impl.CacheImpl;
@@ -83,25 +83,29 @@ public class ActiveMQConsumer {
             connection.start();
 
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
             Topic topic = session.createTopic(getCacheInvalidationTopic());
-
             MessageConsumer consumer = session.createConsumer(topic);
 
             // Message listener for the subscriber.
             consumer.setMessageListener(message -> {
-                if (message instanceof TextMessage) {
-                    log.debug("Received cache invalidation message.");
-                    try {
-                        invalidateCache(((TextMessage) message).getText());
-                    }  catch (JMSException e) {
-                        String sanitizedErrorMessage = e.getMessage().replace("\n", "")
-                                .replace("\r", "");
-                        log.error("Error in reading the cache invalidation message. " + sanitizedErrorMessage);
+                if (!(message instanceof TextMessage)) {
+                    // Ignore non-TextMessage.
+                    return;
+                }
+                try {
+                    String sender = message.getStringProperty(CacheSyncUtils.SENDER);
+                    // Skip processing if the sender is the same as the producer.
+                    if (CacheSyncUtils.getProducerName() != null && StringUtils.equals(
+                            CacheSyncUtils.getProducerName(), sender)) {
+                        return;
                     }
+                    log.debug("Received cache invalidation message.");
+                    invalidateCache(((TextMessage) message).getText());
+                } catch (JMSException e) {
+                    String sanitizedErrorMessage = e.getMessage().replace("\n", "").replace("\r", "");
+                    log.error("Error in reading the cache invalidation message. " + sanitizedErrorMessage);
                 }
             });
-
         } catch (Exception e) {
             String sanitizedErrorMessage = e.getMessage().replace("\n", "")
                     .replace("\r", "");

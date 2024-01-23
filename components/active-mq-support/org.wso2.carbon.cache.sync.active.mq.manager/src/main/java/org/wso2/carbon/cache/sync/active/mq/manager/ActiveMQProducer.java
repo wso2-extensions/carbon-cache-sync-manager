@@ -15,11 +15,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.carbon.cache.sync.active.mq.manager;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,7 +54,6 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
         CacheEntryCreatedListener, CacheInvalidationRequestSender {
 
     private static final Log log = LogFactory.getLog(ActiveMQProducer.class);
-    private static final String SENDER = "sender";
     private static final ExecutorService executorService = Executors.newFixedThreadPool(15);
 
 
@@ -133,7 +132,9 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
             producer = session.createProducer(topic);
 
             TextMessage message = session.createTextMessage(clusterCacheInvalidationRequest.toString());
-            message.setStringProperty(SENDER, CacheSyncUtils.getProducerName());
+            if (StringUtils.isNotBlank(CacheSyncUtils.getProducerName())) {
+                message.setStringProperty(CacheSyncUtils.SENDER, CacheSyncUtils.getProducerName());
+            }
             producer.send(message);
         } catch (JMSException e) {
             log.error("Something went wrong with ActiveMQ producer connection." + e);

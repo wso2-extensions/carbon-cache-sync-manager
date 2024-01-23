@@ -15,7 +15,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.carbon.cache.sync.active.mq.manager;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -41,6 +40,8 @@ public class CacheSyncUtils {
 
     // Default producer retry limit.
     public static final int PRODUCER_RETRY_LIMIT = 30;
+
+    public static final String SENDER = "sender";
 
 
     private CacheSyncUtils() {

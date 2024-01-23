@@ -12,7 +12,7 @@ This component provides the ActiveMQ support for the cache invalidator.
    <Enabled>{{cache_invalidator.active_mq.enabled}}</Enabled>
    <TopicName>{{cache_invalidator.active_mq.topic_name}}</TopicName>
    <ProducerName>{{cache_invalidator.active_mq.producer_name}}</ProducerName>
-   <HybridMode>{{cache_invalidator.active_mq.hybrid_mode_enabled}</HybridMode>
+   <HybridMode>{{cache_invalidator.active_mq.hybrid_mode_enabled}}</HybridMode>
    </ActiveMQ>
    </CacheInvalidator>
    {% endif %}
