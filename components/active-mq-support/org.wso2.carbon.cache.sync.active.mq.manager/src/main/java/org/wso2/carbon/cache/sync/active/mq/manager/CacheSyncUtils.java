@@ -43,41 +43,52 @@ public class CacheSyncUtils {
 
     public static final String SENDER = "sender";
 
-
     private CacheSyncUtils() {
 
     }
 
+    /**
+     * Configured activemq broker url.
+     *
+     * @return String ActiveMQ broker url.
+     */
     public static String getActiveMQBrokerUrl() {
 
-        if (StringUtils.isNotBlank(IdentityUtil.getProperty(BROKER_URL_PROPERTY))) {
-            return IdentityUtil.getProperty(BROKER_URL_PROPERTY).trim();
-        }
-        return null;
+        String propertyValue = IdentityUtil.getProperty(BROKER_URL_PROPERTY);
+        return StringUtils.isNotBlank(propertyValue.trim()) ? propertyValue.trim() : null;
     }
 
+    /**
+     * Configured producer name for the node.
+     *
+     * @return String Producer name.
+     */
     public static String getProducerName() {
 
-        if (StringUtils.isNotBlank(IdentityUtil.getProperty(ACTIVEMQ_PRODUCER_NAME_PROPERTY))) {
-            return IdentityUtil.getProperty(ACTIVEMQ_PRODUCER_NAME_PROPERTY).trim();
-        }
-        return null;
+        String propertyValue = IdentityUtil.getProperty(ACTIVEMQ_PRODUCER_NAME_PROPERTY);
+        return StringUtils.isNotBlank(propertyValue.trim()) ? propertyValue.trim() : null;
     }
 
+    /**
+     * Configured cache topic name in the activemq broker.
+     *
+     * @return String Cache topic name.
+     */
     public static String getCacheInvalidationTopic() {
 
-        if (StringUtils.isNotBlank(IdentityUtil.getProperty(ACTIVEMQ_CACHE_TOPIC_PROPERTY))) {
-            return IdentityUtil.getProperty(ACTIVEMQ_CACHE_TOPIC_PROPERTY).trim();
-        }
-        return null;
+        String propertyValue = IdentityUtil.getProperty(ACTIVEMQ_CACHE_TOPIC_PROPERTY);
+        return StringUtils.isNotBlank(propertyValue.trim()) ? propertyValue.trim() : null;
     }
 
+    /**
+     * Checks if the Hybrid mode is enabled.
+     *
+     * @return Boolean representing the enabled state of the hybrid mode.
+     */
     public static boolean getRunInHybridModeProperty() {
 
-        if (StringUtils.isNotBlank(IdentityUtil.getProperty(RUN_IN_HYBRID_MODE_PROPERTY))) {
-            return Boolean.parseBoolean(IdentityUtil.getProperty(RUN_IN_HYBRID_MODE_PROPERTY).trim());
-        }
-        return true;
+        String propertyValue = IdentityUtil.getProperty(RUN_IN_HYBRID_MODE_PROPERTY);
+        return StringUtils.isNotBlank(propertyValue) ? Boolean.parseBoolean(propertyValue) : false;
     }
 
     /**
@@ -87,6 +98,7 @@ public class CacheSyncUtils {
      */
     @SuppressFBWarnings
     public static Boolean isActiveMQCacheInvalidatorEnabled() {
+
         String propertyValue = IdentityUtil.getProperty(ACTIVEMQ_INVALIDATOR_ENABLED_PROPERTY);
         return StringUtils.isNotBlank(propertyValue) ? Boolean.parseBoolean(propertyValue) : null;
     }

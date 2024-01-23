@@ -72,7 +72,7 @@ public class ActiveMQConsumer {
     public void startService() {
 
         if (!CacheSyncUtils.isActiveMQCacheInvalidatorEnabled()) {
-            log.debug("ActiveMQ based cache invalidation is not enabled");
+            log.debug("ActiveMQ based cache invalidation is not enabled.");
             return;
         }
 
@@ -109,7 +109,7 @@ public class ActiveMQConsumer {
         } catch (Exception e) {
             String sanitizedErrorMessage = e.getMessage().replace("\n", "")
                     .replace("\r", "");
-            log.error("Something went wrong with ActiveMQ consumer " + sanitizedErrorMessage);
+            log.error("Something went wrong with ActiveMQ consumer. " + sanitizedErrorMessage);
         }
     }
 
@@ -133,7 +133,7 @@ public class ActiveMQConsumer {
             if (log.isDebugEnabled()) {
                 log.debug("Received cache invalidation message from other cluster nodes for '" + cacheKey +
                         "' of the cache '" + cache + "' of the cache manager '" +
-                        cacheManager + "'");
+                        cacheManager + "'.");
             }
 
             try {
@@ -154,16 +154,17 @@ public class ActiveMQConsumer {
             } finally {
                 PrivilegedCarbonContext.endTenantFlow();
             }
+
+            // If hybrid mode is enabled pass invalidation msg to local cluster.
             if (CacheSyncUtils.getRunInHybridModeProperty()) {
 
-                CacheEntryInfo  cacheEntryInfo = new CacheEntryInfo(cacheManager,
+                CacheEntryInfo cacheEntryInfo = new CacheEntryInfo(cacheManager,
                         cache, cacheKey, tenantDomain, Integer.valueOf(tenantId));
-                log.debug("Sending cache invalidation message for local clustering " + cacheEntryInfo);
+                log.debug("Sending cache invalidation message for local clustering: " + cacheEntryInfo);
                 ClusterCacheInvalidationRequestSender cacheInvalidationRequestSender =
                         new ClusterCacheInvalidationRequestSender();
                 cacheInvalidationRequestSender.send(cacheEntryInfo);
             }
-
         } else {
             log.debug("Input doesn't match the expected msg pattern.");
         }

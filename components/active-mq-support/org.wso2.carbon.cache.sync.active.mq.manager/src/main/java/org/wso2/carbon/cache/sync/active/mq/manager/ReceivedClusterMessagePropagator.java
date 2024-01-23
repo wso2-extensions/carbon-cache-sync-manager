@@ -32,6 +32,7 @@ public class ReceivedClusterMessagePropagator implements CacheInvalidationReques
 
     @Override
     public void propagate(ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
+
         if (CacheSyncUtils.getRunInHybridModeProperty()) {
             log.debug("Sending cache invalidation message across multiple clustering.");
             ActiveMQProducer activeMQProducer = new ActiveMQProducer();
