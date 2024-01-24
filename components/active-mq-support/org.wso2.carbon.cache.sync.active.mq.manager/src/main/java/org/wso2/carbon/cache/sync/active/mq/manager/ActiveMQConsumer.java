@@ -132,8 +132,7 @@ public class ActiveMQConsumer {
 
             if (log.isDebugEnabled()) {
                 log.debug("Received cache invalidation message from other cluster nodes for '" + cacheKey +
-                        "' of the cache '" + cache + "' of the cache manager '" +
-                        cacheManager + "'.");
+                        "' of the cache '" + cache + "' of the cache manager '" + cacheManager + "'.");
             }
 
             try {
