@@ -273,7 +273,7 @@
         <log4j-api.version>2.14.1</log4j-api.version>
         <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
         <commons-lang.version>2.6.0.wso2v1</commons-lang.version>
-        <javax.cache.wso2.version>4.6.1</javax.cache.wso2.version>
+        <javax.cache.wso2.version>4.9.24</javax.cache.wso2.version>
 
         <!--Maven Plugin Version-->
         <maven.scr.plugin.version>1.22.0</maven.scr.plugin.version>
