@@ -15,20 +15,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.carbon.cache.sync.active.mq.manager;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.caching.impl.CacheImpl;
+import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequestSender;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.cache.Cache;
+import javax.cache.CacheEntryInfo;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.jms.Connection;
@@ -66,10 +68,11 @@ public class ActiveMQConsumer {
         return instance;
     }
 
+    @SuppressFBWarnings
     public void startService() {
 
         if (!CacheSyncUtils.isActiveMQCacheInvalidatorEnabled()) {
-            log.debug("ActiveMQ based cache invalidation is not enabled");
+            log.debug("ActiveMQ based cache invalidation is not enabled.");
             return;
         }
 
@@ -80,28 +83,33 @@ public class ActiveMQConsumer {
             connection.start();
 
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
             Topic topic = session.createTopic(getCacheInvalidationTopic());
-
             MessageConsumer consumer = session.createConsumer(topic);
 
             // Message listener for the subscriber.
             consumer.setMessageListener(message -> {
-                if (message instanceof TextMessage) {
-                    try {
-                        invalidateCache(((TextMessage) message).getText());
-                    }  catch (JMSException e) {
-                        String sanitizedErrorMessage = e.getMessage().replace("\n", "")
-                                .replace("\r", "");
-                        log.error("Error in reading the cache invalidation message. " + sanitizedErrorMessage);
+                if (!(message instanceof TextMessage)) {
+                    // Ignore non-TextMessage.
+                    return;
+                }
+                try {
+                    String sender = message.getStringProperty(CacheSyncUtils.SENDER);
+                    // Skip processing if the sender is the same as the producer.
+                    if (CacheSyncUtils.getProducerName() != null && StringUtils.equals(
+                            CacheSyncUtils.getProducerName(), sender)) {
+                        return;
                     }
+                    log.debug("Received cache invalidation message.");
+                    invalidateCache(((TextMessage) message).getText());
+                } catch (JMSException e) {
+                    String sanitizedErrorMessage = e.getMessage().replace("\n", "").replace("\r", "");
+                    log.error("Error in reading the cache invalidation message. " + sanitizedErrorMessage);
                 }
             });
-
-        } catch (Exception e) {
+        } catch (JMSException e) {
             String sanitizedErrorMessage = e.getMessage().replace("\n", "")
                     .replace("\r", "");
-            log.error("Something went wrong with ActiveMQ consumer " + sanitizedErrorMessage);
+            log.error("Something went wrong with ActiveMQ consumer. " + sanitizedErrorMessage);
         }
     }
 
@@ -122,6 +130,11 @@ public class ActiveMQConsumer {
             String cache = matcher.group("cache");
             String cacheKey = matcher.group("cacheKey");
 
+            if (log.isDebugEnabled()) {
+                log.debug("Received cache invalidation message from other cluster nodes for '" + cacheKey +
+                        "' of the cache '" + cache + "' of the cache manager '" + cacheManager + "'.");
+            }
+
             try {
                 PrivilegedCarbonContext.startTenantFlow();
                 PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
@@ -139,6 +152,17 @@ public class ActiveMQConsumer {
                 }
             } finally {
                 PrivilegedCarbonContext.endTenantFlow();
+            }
+
+            // If hybrid mode is enabled pass invalidation msg to local cluster.
+            if (CacheSyncUtils.getRunInHybridModeProperty()) {
+
+                CacheEntryInfo cacheEntryInfo = new CacheEntryInfo(cacheManager,
+                        cache, cacheKey, tenantDomain, Integer.valueOf(tenantId));
+                log.debug("Sending cache invalidation message for local clustering: " + cacheEntryInfo);
+                ClusterCacheInvalidationRequestSender cacheInvalidationRequestSender =
+                        new ClusterCacheInvalidationRequestSender();
+                cacheInvalidationRequestSender.send(cacheEntryInfo);
             }
         } else {
             log.debug("Input doesn't match the expected msg pattern.");
