@@ -35,7 +35,7 @@ public class ReceivedClusterMessagePropagator implements CacheInvalidationReques
 
         if (CacheSyncUtils.getRunInHybridModeProperty()) {
             log.debug("Sending cache invalidation message across multiple clustering.");
-            ActiveMQProducer activeMQProducer = new ActiveMQProducer();
+            ActiveMQProducer activeMQProducer = ActiveMQProducer.getInstance();
             activeMQProducer.sendAsyncInvalidation(clusterCacheInvalidationRequest);
         }
     }

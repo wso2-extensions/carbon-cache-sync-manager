@@ -57,7 +57,7 @@ public class CacheSyncActiveMQManagerServiceComponent {
     @Activate
     protected void activate(ComponentContext context) {
 
-        ActiveMQProducer producer = new ActiveMQProducer();
+        ActiveMQProducer producer = ActiveMQProducer.getInstance();
         serviceRegistrationForCacheEntry = context.getBundleContext().registerService(
                 CacheEntryListener.class.getName(), producer, null);
         serviceRegistrationForRequestSend = context.getBundleContext().registerService(
@@ -66,7 +66,6 @@ public class CacheSyncActiveMQManagerServiceComponent {
                 CacheEntryRemovedListener.class.getName(), producer, null);
         serviceRegistrationForCacheUpdate = context.getBundleContext().registerService(
                 CacheEntryUpdatedListener.class.getName(), producer, null);
-
 
         context.getBundleContext().registerService(CacheInvalidationRequestPropagator.class.getName(),
                 new ReceivedClusterMessagePropagator(), null);
@@ -97,7 +96,9 @@ public class CacheSyncActiveMQManagerServiceComponent {
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdownNow();
         }
-        ActiveMQProducer.shutdownExecutorService();
+
+        // Shutdown ActiveMQ producer.
+        ActiveMQProducer.getInstance().shutdownExecutorService();
 
         // Unregistering the listener service.
         if (serviceRegistrationForCacheEntry != null) {

@@ -55,7 +55,37 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
 
     private static final Log log = LogFactory.getLog(ActiveMQProducer.class);
     private static final ExecutorService executorService = Executors.newFixedThreadPool(15);
+    private final ConnectionFactory connectionFactory;
+    private final Connection connection;
+    private final Session session;
+    private final MessageProducer producer;
+    private static volatile ActiveMQProducer instance;
 
+    private ActiveMQProducer() {
+
+        this.connectionFactory = new ActiveMQConnectionFactory(CacheSyncUtils.getActiveMQBrokerUrl());
+        try {
+            this.connection = connectionFactory.createConnection();
+            this.connection.start();
+            this.session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Topic topic = session.createTopic(CacheSyncUtils.getCacheInvalidationTopic());
+            this.producer = session.createProducer(topic);
+        } catch (JMSException e) {
+            throw new RuntimeException("Error initializing ActiveMQ resources", e);
+        }
+    }
+
+    public static ActiveMQProducer getInstance() {
+
+        if (instance == null) {
+            synchronized (ActiveMQProducer.class) {
+                if (instance == null) {
+                    instance = new ActiveMQProducer();
+                }
+            }
+        }
+        return instance;
+    }
 
     @SuppressFBWarnings
     @Override
@@ -118,19 +148,7 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
     @SuppressFBWarnings
     private void sendInvalidationMessage(ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
 
-        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(CacheSyncUtils.getActiveMQBrokerUrl());
-        Connection connection = null;
-        Session session = null;
-        MessageProducer producer = null;
-
         try {
-            connection = connectionFactory.createConnection();
-            connection.start();
-
-            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            Topic topic = session.createTopic(CacheSyncUtils.getCacheInvalidationTopic());
-            producer = session.createProducer(topic);
-
             TextMessage message = session.createTextMessage(clusterCacheInvalidationRequest.toString());
             if (StringUtils.isNotBlank(CacheSyncUtils.getProducerName())) {
                 message.setStringProperty(CacheSyncUtils.SENDER, CacheSyncUtils.getProducerName());
@@ -138,20 +156,6 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
             producer.send(message);
         } catch (JMSException e) {
             log.error("Something went wrong with ActiveMQ producer connection." + e);
-        } finally {
-            try {
-                if (producer != null) {
-                    producer.close();
-                }
-                if (session != null) {
-                    session.close();
-                }
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (JMSException e) {
-                log.error("Error closing ActiveMQ resources", e);
-            }
         }
     }
 
@@ -181,7 +185,8 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
     }
 
     // Shutdown the thread executor.
-    public static void shutdownExecutorService() {
+    public void shutdownExecutorService() {
+
         executorService.shutdown();
         try {
             if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -190,6 +195,25 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
         } catch (InterruptedException ex) {
             executorService.shutdownNow();
             Thread.currentThread().interrupt();
+        } finally {
+            closeActiveMQResources();
+        }
+    }
+
+    public void closeActiveMQResources() {
+
+        try {
+            if (producer != null) {
+                producer.close();
+            }
+            if (session != null) {
+                session.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (JMSException e) {
+            log.error("Error closing ActiveMQ resources", e);
         }
     }
 }
