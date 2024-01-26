@@ -106,7 +106,7 @@ public class ActiveMQConsumer {
                     log.error("Error in reading the cache invalidation message. " + sanitizedErrorMessage);
                 }
             });
-        } catch (Exception e) {
+        } catch (JMSException e) {
             String sanitizedErrorMessage = e.getMessage().replace("\n", "")
                     .replace("\r", "");
             log.error("Something went wrong with ActiveMQ consumer. " + sanitizedErrorMessage);
