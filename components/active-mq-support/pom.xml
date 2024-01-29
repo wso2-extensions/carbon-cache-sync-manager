@@ -22,7 +22,7 @@
         <groupId>org.wso2.carbon.cache.sync.manager</groupId>
         <artifactId>carbon-cache-sync-manager</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>1.0.6-SNAPSHOT</version>
+        <version>1.0.6</version>
     </parent>
 
     <groupId>org.wso2.carbon.cache.sync.manager</groupId>
