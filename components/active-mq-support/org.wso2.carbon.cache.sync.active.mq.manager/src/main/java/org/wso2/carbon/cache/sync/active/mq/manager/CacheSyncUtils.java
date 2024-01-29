@@ -17,9 +17,11 @@
  */
 package org.wso2.carbon.cache.sync.active.mq.manager;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
+
+import java.util.function.BiFunction;
+import java.util.function.UnaryOperator;
 
 /**
  * Util class for the ActiveMQ cache manager Service.
@@ -54,8 +56,7 @@ public class CacheSyncUtils {
      */
     public static String getActiveMQBrokerUrl() {
 
-        String propertyValue = IdentityUtil.getProperty(BROKER_URL_PROPERTY);
-        return StringUtils.isNotBlank(propertyValue.trim()) ? propertyValue.trim() : null;
+        return getConfiguredStringValue.apply(BROKER_URL_PROPERTY);
     }
 
     /**
@@ -65,8 +66,7 @@ public class CacheSyncUtils {
      */
     public static String getProducerName() {
 
-        String propertyValue = IdentityUtil.getProperty(ACTIVEMQ_PRODUCER_NAME_PROPERTY);
-        return StringUtils.isNotBlank(propertyValue.trim()) ? propertyValue.trim() : null;
+        return getConfiguredStringValue.apply(ACTIVEMQ_PRODUCER_NAME_PROPERTY);
     }
 
     /**
@@ -76,8 +76,7 @@ public class CacheSyncUtils {
      */
     public static String getCacheInvalidationTopic() {
 
-        String propertyValue = IdentityUtil.getProperty(ACTIVEMQ_CACHE_TOPIC_PROPERTY);
-        return StringUtils.isNotBlank(propertyValue.trim()) ? propertyValue.trim() : null;
+        return getConfiguredStringValue.apply(ACTIVEMQ_CACHE_TOPIC_PROPERTY);
     }
 
     /**
@@ -87,8 +86,7 @@ public class CacheSyncUtils {
      */
     public static boolean getRunInHybridModeProperty() {
 
-        String propertyValue = IdentityUtil.getProperty(RUN_IN_HYBRID_MODE_PROPERTY);
-        return StringUtils.isNotBlank(propertyValue) ? Boolean.parseBoolean(propertyValue) : false;
+        return getConfiguredBooleanValue.apply(RUN_IN_HYBRID_MODE_PROPERTY, false);
     }
 
     /**
@@ -96,10 +94,19 @@ public class CacheSyncUtils {
      *
      * @return Boolean representing the enabled state, or null if the property is not set.
      */
-    @SuppressFBWarnings
     public static Boolean isActiveMQCacheInvalidatorEnabled() {
 
-        String propertyValue = IdentityUtil.getProperty(ACTIVEMQ_INVALIDATOR_ENABLED_PROPERTY);
-        return StringUtils.isNotBlank(propertyValue) ? Boolean.parseBoolean(propertyValue) : null;
+        return getConfiguredBooleanValue.apply(ACTIVEMQ_INVALIDATOR_ENABLED_PROPERTY, null);
     }
+
+    private static UnaryOperator<String> getConfiguredStringValue = (String config) -> {
+        String propertyValue = IdentityUtil.getProperty(config);
+        return StringUtils.isNotBlank(propertyValue) ? propertyValue.trim() : null;
+    };
+
+    private static BiFunction<String, Boolean, Boolean> getConfiguredBooleanValue = (String config,
+                                                                                     Boolean defaultValue) -> {
+        String propertyValue = IdentityUtil.getProperty(config);
+        return StringUtils.isNotBlank(propertyValue) ? Boolean.valueOf(propertyValue.trim()) : defaultValue;
+    };
 }
