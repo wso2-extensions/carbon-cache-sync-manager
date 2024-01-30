@@ -1,6 +1,3 @@
-### Introduction
-This connector supports cache invalidation message exchange across multi-cluster deployments, which enables the deployment of Identity Server (IS) in Active-Active mode. It establishes connections between IS servers and a designated ActiveMQ broker (to be deployed independently) through a topic using a publish/subscribe (pub/sub) mechanism.
-
 ### How to Build
 1. Build the maven project and copy the jar file to the `<IS_HOME>/repository/components/dropins` directory.
 2. Add the following identity.xml.j2 template configurations
@@ -17,6 +14,7 @@ This connector supports cache invalidation message exchange across multi-cluster
    </CacheInvalidator>
    {% endif %}
 ```
+**Note:** For **IS 5.11.0** this should have been already added. 
 
 3. Then add the following config(update it with your values) in the `deployment.toml` file
 ```yaml
