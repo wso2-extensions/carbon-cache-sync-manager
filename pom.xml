@@ -26,7 +26,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.cache.sync.manager</groupId>
     <artifactId>carbon-cache-sync-manager</artifactId>
-    <version>1.0.7-SNAPSHOT</version>
+    <version>1.0.7</version>
     <packaging>pom</packaging>
     <name>WSO2 Carbon Cache Sync module</name>
     <url>http://wso2.org</url>
@@ -35,7 +35,7 @@
         <url>https://github.com/wso2-extensions/carbon-cache-sync-manager</url>
         <developerConnection>scm:git:https://github.com/wso2-extensions/carbon-cache-sync-manager.git</developerConnection>
         <connection>scm:git:https://github.com/wso2-extensions/carbon-cache-sync-manager.git</connection>
-        <tag>HEAD</tag>
+        <tag>v1.0.7</tag>
     </scm>
 
     <dependencies>
