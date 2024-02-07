@@ -15,16 +15,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.cache.sync.active.mq.manager.internal;
+package org.wso2.carbon.cache.sync.jms.manager.internal;
 
 /**
- * Data holder for the ActiveMQ cache manager.
+ * Data holder for the JMS cache manager.
  */
-public class CacheSyncActiveMQManagerDataHolder {
+public class JMSManagerDataHolder {
 
-    private static CacheSyncActiveMQManagerDataHolder instance = new CacheSyncActiveMQManagerDataHolder();
+    private static JMSManagerDataHolder instance = new JMSManagerDataHolder();
 
-    public static CacheSyncActiveMQManagerDataHolder getInstance() {
+    public static JMSManagerDataHolder getInstance() {
 
         return instance;
     }
