@@ -31,7 +31,6 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-//import javax.jms.JMSSecurityRuntimeException;
 
 /**
  * Util class for the ActiveMQ cache manager Service.

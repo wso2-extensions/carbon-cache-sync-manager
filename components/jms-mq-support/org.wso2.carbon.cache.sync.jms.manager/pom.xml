@@ -23,12 +23,12 @@
         <groupId>org.wso2.carbon.cache.sync.manager</groupId>
         <artifactId>jms-mq-support</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>1.0.4-SNAPSHOT</version>
+        <version>1.0.8-SNAPSHOT</version>
     </parent>
 
     <groupId>org.wso2.carbon.cache.sync.manager</groupId>
     <artifactId>org.wso2.carbon.cache.sync.jms.manager</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.8-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <dependencies>
@@ -53,10 +53,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-all</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.rabbitmq.jms</groupId>
             <artifactId>rabbitmq-jms</artifactId>
         </dependency>
@@ -69,23 +65,10 @@
             <artifactId>javax.jms-api</artifactId>
             <version>2.0.1</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.activemq</groupId>-->
-<!--            <artifactId>artemis-jms-client-all</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>jakarta.jms</groupId>-->
-<!--            <artifactId>jakarta.jms-api</artifactId>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.activemq</groupId>-->
-<!--            <artifactId>activemq-jndi</artifactId>-->
-<!--        </dependency>-->
     </dependencies>
 
     <repositories>
