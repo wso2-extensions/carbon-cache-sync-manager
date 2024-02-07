@@ -98,12 +98,6 @@
                             org.wso2.carbon.cache.sync.jms.manager.internal
                         </Private-Package>
                         <Embed-Dependency>
-<!--                            javax.jms-api,-->
-<!--                            activemq-all-->
-<!--                            jakarta.jms-api,-->
-<!--                            amqp-client,-->
-<!--                            rabbitmq-jms-->
-<!--                            artemis-jms-client-all-->
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Export-Package>

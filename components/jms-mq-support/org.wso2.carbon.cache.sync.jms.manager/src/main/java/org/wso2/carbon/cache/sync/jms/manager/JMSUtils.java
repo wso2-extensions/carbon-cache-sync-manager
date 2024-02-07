@@ -132,33 +132,6 @@ public class JMSUtils {
         properties.put(JNDI_PROVIDER_URL_PROP_NAME, getConfiguredStringValue.apply(JNDI_PROVIDER_URL_PROP_VALUE));
         properties.put(JNDI_TOPIC_PROP_NAME, getConfiguredStringValue.apply(JNDI_TOPIC_PROP_NAME_VALUE));
         return new InitialContext(properties);
-
-//            String jndiPropertiesFilePath = "/Users/inthirakumaarantharmakulasingham/IAM/activeActive/staging/jndi.properties";
-//
-//            // Load the JNDI properties from the specified file
-//            Properties properties = new Properties();
-//            properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream(jndiPropertiesFilePath));
-//
-//
-//            // Object obj = context.lookup("your/jndi/name");
-
-//            return new InitialContext(properties);
-
-//        else if ("rabbitmq".equalsIgnoreCase(brokerType)) {
-//            properties.put("java.naming.factory.initial", "com.rabbitmq.jms.admin.RMQInitialContextFactory");
-//            properties.put("java.naming.provider.url", "localhost:5672");
-//            properties.put("java.naming.security.principal", "guest");
-//            properties.put("java.naming.security.credentials", "guest");
-//            properties.put("topic.exampleTopic", "CacheTopic");
-//        }
-
-//        if ("jms".equalsIgnoreCase(brokerType)) {
-//            properties.put(JNDI_INITIAL_FACTORY, "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
-//        }
-//        properties.put(JNDI_PROVIDER_URL, "failover:tcp://localhost:61616");
-//        properties.put(JNDI_TOPIC, "CacheTopic");
-//        properties.put(PARAM_JMS_USERNAME, "guest");
-//        properties.put(PARAM_JMS_PASSWORD, "guest");
     }
 
     public static Connection createConnection(ConnectionFactory conFactory) throws JMSException {

@@ -96,7 +96,7 @@
                 <version>${carbon.identity.framework.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.activgiemq</groupId>
                 <artifactId>activemq-all</artifactId>
                 <version>${activemq-all.version}</version>
             </dependency>
@@ -108,7 +108,7 @@
             <dependency>
                 <groupId>com.rabbitmq</groupId>
                 <artifactId>amqp-client</artifactId>
-                <version>5.15.0</version> <!-- Replace with the version you need -->
+                <version>5.15.0</version>
             </dependency>
             <dependency>
                 <groupId>javax.jms</groupId>
