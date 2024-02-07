@@ -15,10 +15,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.cache.sync.active.mq.manager;
+package org.wso2.carbon.cache.sync.jms.manager;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -28,6 +27,7 @@ import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequest;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +39,15 @@ import javax.cache.event.CacheEntryEvent;
 import javax.cache.event.CacheEntryListenerException;
 import javax.cache.event.CacheEntryRemovedListener;
 import javax.cache.event.CacheEntryUpdatedListener;
+
+//import jakarta.jms.ConnectionFactory;
+//import jakarta.jms.Connection;
+//import jakarta.jms.JMSException;
+//import jakarta.jms.MessageProducer;
+//import jakarta.jms.Session;
+//import jakarta.jms.TextMessage;
+//import jakarta.jms.Topic;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -46,45 +55,64 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * This class contains the logic for sending cache invalidation message.
  */
-public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUpdatedListener,
-        CacheEntryCreatedListener, CacheInvalidationRequestSender {
+public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdatedListener, CacheEntryCreatedListener,
+        CacheInvalidationRequestSender {
 
-    private static final Log log = LogFactory.getLog(ActiveMQProducer.class);
+    private static final Log log = LogFactory.getLog(JMSProducer.class);
     private static final ExecutorService executorService = Executors.newFixedThreadPool(15);
     private final ConnectionFactory connectionFactory;
-    private final Connection connection;
-    private final Session session;
-    private final MessageProducer producer;
-    private static volatile ActiveMQProducer instance;
+    private final Topic topic;
+    private Connection connection;
+    private Session session;
+    private MessageProducer producer;
+    private static volatile JMSProducer instance;
 
-    private ActiveMQProducer() {
+    private JMSProducer() {
 
-        this.connectionFactory = new ActiveMQConnectionFactory(CacheSyncUtils.getActiveMQBrokerUrl());
         try {
-            this.connection = connectionFactory.createConnection();
-            this.connection.start();
-            this.session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            Topic topic = session.createTopic(CacheSyncUtils.getCacheInvalidationTopic());
-            this.producer = session.createProducer(topic);
-        } catch (JMSException e) {
-            throw new RuntimeException("Error initializing ActiveMQ resources", e);
+            InitialContext initialContext = JMSUtils.createInitialContext();
+            this.connectionFactory = (javax.jms.ConnectionFactory) initialContext.lookup("ConnectionFactory");
+            this.topic = (Topic)initialContext.lookup("exampleTopic");
+        } catch (NamingException e) {
+            throw new RuntimeException("Error initializing JMS client resources", e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public static ActiveMQProducer getInstance() {
+    public static JMSProducer getInstance() {
 
         if (instance == null) {
-            synchronized (ActiveMQProducer.class) {
+            synchronized (JMSProducer.class) {
                 if (instance == null) {
-                    instance = new ActiveMQProducer();
+                    instance = new JMSProducer();
                 }
             }
         }
         return instance;
+    }
+
+    public void startService() {
+
+        if (!JMSUtils.isMBCacheInvalidatorEnabled()) {
+            log.debug("JMS MB based cache invalidation is not enabled.");
+            return;
+        }
+
+        try {
+            this.connection = JMSUtils.createConnection(connectionFactory);;
+            this.connection.start();
+            this.session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            this.producer = session.createProducer(topic);
+        } catch (JMSException e) {
+            throw new RuntimeException("Error starting JMS connection ", e);
+        }
     }
 
     @SuppressFBWarnings
@@ -94,8 +122,8 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
         String tenantDomain = cacheEntryInfo.getTenantDomain();
         int tenantId = cacheEntryInfo.getTenantId();
 
-        if (!CacheSyncUtils.isActiveMQCacheInvalidatorEnabled()) {
-            log.debug("ActiveMQ based cache invalidation is not enabled");
+        if (connection == null) {
+            log.debug("JMS Producer connection is not initialized");
             return;
         }
 
@@ -134,8 +162,8 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
     @SuppressFBWarnings
     public void sendAsyncInvalidation(ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
 
-        if (!CacheSyncUtils.isActiveMQCacheInvalidatorEnabled()) {
-            log.debug("ActiveMQ based cache invalidation is not enabled");
+        if (!JMSUtils.isMBCacheInvalidatorEnabled()) {
+            log.debug("MB based cache invalidation is not enabled");
             return;
         }
 
@@ -150,8 +178,8 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
 
         try {
             TextMessage message = session.createTextMessage(clusterCacheInvalidationRequest.toString());
-            if (StringUtils.isNotBlank(CacheSyncUtils.getProducerName())) {
-                message.setStringProperty(CacheSyncUtils.SENDER, CacheSyncUtils.getProducerName());
+            if (StringUtils.isNotBlank(JMSUtils.getProducerName())) {
+                message.setStringProperty(JMSUtils.SENDER, JMSUtils.getProducerName());
             }
             producer.send(message);
         } catch (JMSException e) {
@@ -196,11 +224,11 @@ public class ActiveMQProducer implements CacheEntryRemovedListener, CacheEntryUp
             executorService.shutdownNow();
             Thread.currentThread().interrupt();
         } finally {
-            closeActiveMQResources();
+            closeResources();
         }
     }
 
-    public void closeActiveMQResources() {
+    public void closeResources() {
 
         try {
             if (producer != null) {

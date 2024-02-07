@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.cache.sync.active.mq.manager;
+package org.wso2.carbon.cache.sync.jms.manager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,17 +26,17 @@ import javax.cache.CacheInvalidationRequestPropagator;
 /**
  * This class contains the logic for propagating cache invalidation message from local to multi cluster.
  */
-public class ReceivedClusterMessagePropagator implements CacheInvalidationRequestPropagator {
+public class CrossClusterMessageDispatcher implements CacheInvalidationRequestPropagator {
 
-    private static final Log log = LogFactory.getLog(ReceivedClusterMessagePropagator.class);
+    private static final Log log = LogFactory.getLog(CrossClusterMessageDispatcher.class);
 
     @Override
     public void propagate(ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
 
-        if (CacheSyncUtils.getRunInHybridModeProperty()) {
+        if (JMSUtils.getRunInHybridModeProperty()) {
             log.debug("Sending cache invalidation message across multiple clustering.");
-            ActiveMQProducer activeMQProducer = ActiveMQProducer.getInstance();
-            activeMQProducer.sendAsyncInvalidation(clusterCacheInvalidationRequest);
+            JMSProducer producer = JMSProducer.getInstance();
+            producer.sendAsyncInvalidation(clusterCacheInvalidationRequest);
         }
     }
 }
