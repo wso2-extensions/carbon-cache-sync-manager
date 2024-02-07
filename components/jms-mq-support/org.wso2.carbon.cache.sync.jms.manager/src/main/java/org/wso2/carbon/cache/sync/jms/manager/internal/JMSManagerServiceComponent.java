@@ -23,10 +23,10 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.wso2.carbon.cache.sync.jms.manager.JMSProducer;
-import org.wso2.carbon.cache.sync.jms.manager.JMSConsumer;
-import org.wso2.carbon.cache.sync.jms.manager.JMSUtils;
 import org.wso2.carbon.cache.sync.jms.manager.CrossClusterMessageDispatcher;
+import org.wso2.carbon.cache.sync.jms.manager.JMSConsumer;
+import org.wso2.carbon.cache.sync.jms.manager.JMSProducer;
+import org.wso2.carbon.cache.sync.jms.manager.JMSUtils;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

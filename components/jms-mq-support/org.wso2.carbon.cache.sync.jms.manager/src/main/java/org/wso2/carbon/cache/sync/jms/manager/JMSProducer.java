@@ -39,15 +39,6 @@ import javax.cache.event.CacheEntryEvent;
 import javax.cache.event.CacheEntryListenerException;
 import javax.cache.event.CacheEntryRemovedListener;
 import javax.cache.event.CacheEntryUpdatedListener;
-
-//import jakarta.jms.ConnectionFactory;
-//import jakarta.jms.Connection;
-//import jakarta.jms.JMSException;
-//import jakarta.jms.MessageProducer;
-//import jakarta.jms.Session;
-//import jakarta.jms.TextMessage;
-//import jakarta.jms.Topic;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -77,8 +68,8 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
 
         try {
             InitialContext initialContext = JMSUtils.createInitialContext();
-            this.connectionFactory = (javax.jms.ConnectionFactory) initialContext.lookup("ConnectionFactory");
-            this.topic = (Topic)initialContext.lookup("exampleTopic");
+            this.connectionFactory = (ConnectionFactory) initialContext.lookup("ConnectionFactory");
+            this.topic = (Topic) initialContext.lookup("exampleTopic");
         } catch (NamingException e) {
             throw new RuntimeException("Error initializing JMS client resources", e);
         } catch (IOException e) {
@@ -212,7 +203,6 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
                 cacheEntryEvent.getSource().getName(), cacheEntryEvent.getKey(), tenantDomain, tenantId);
     }
 
-    // Shutdown the thread executor.
     public void shutdownExecutorService() {
 
         executorService.shutdown();

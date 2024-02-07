@@ -17,7 +17,6 @@
  */
 package org.wso2.carbon.cache.sync.jms.manager;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
@@ -37,13 +36,6 @@ import javax.naming.NamingException;
  */
 public class JMSUtils {
 
-//    public static final String BROKER_URL_PROPERTY = "CacheInvalidator.ActiveMQ.BrokerURL";
-//    public static final String ACTIVEMQ_INVALIDATOR_ENABLED_PROPERTY = "CacheInvalidator.ActiveMQ.Enabled";
-//    public static final String ACTIVEMQ_CACHE_TOPIC_PROPERTY = "CacheInvalidator.ActiveMQ.TopicName";
-//    public static final String ACTIVEMQ_PRODUCER_NAME_PROPERTY = "CacheInvalidator.ActiveMQ.ProducerName";
-//    public static final String RUN_IN_HYBRID_MODE_PROPERTY = "CacheInvalidator.ActiveMQ.HybridMode";
-
-
     public static final String MB_TYPE = "CacheInvalidator.MB.Type";
     public static final String INVALIDATOR_ENABLED_PROPERTY = "CacheInvalidator.MB.Enabled";
     public static final String RUN_IN_HYBRID_MODE_PROPERTY = "CacheInvalidator.MB.HybridMode";
@@ -52,8 +44,6 @@ public class JMSUtils {
     public static final String JNDI_INITIAL_FACTORY_PROP_NAME = "java.naming.factory.initial";
     public static final String JNDI_PROVIDER_URL_PROP_NAME = "java.naming.provider.url";
     public static final String JNDI_TOPIC_PROP_NAME = "topic.exampleTopic";
-    public static final String MB_USERNAME_PROP_NAME = "transport.jms.UserName";
-    public static final String MB_PASSWORD_PROP_NAME = "transport.jms.Password";
 
     public static final String JNDI_INITIAL_FACTORY_PROP_VALUE = "CacheInvalidator.MB.InitialNamingFactory";
     public static final String JNDI_PROVIDER_URL_PROP_VALUE = "CacheInvalidator.MB.ProviderURL";
@@ -85,7 +75,7 @@ public class JMSUtils {
     private static BiFunction<String, Boolean, Boolean> getConfiguredBooleanValue = (String config,
                                                                                      Boolean defaultValue) -> {
         String propertyValue = IdentityUtil.getProperty(config);
-        return StringUtils.isNotBlank(propertyValue) ? Boolean.parseBoolean(propertyValue.trim()) : defaultValue;
+        return StringUtils.isNotBlank(propertyValue) ? Boolean.valueOf(propertyValue.trim()) : defaultValue;
     };
 
     /**
@@ -105,8 +95,7 @@ public class JMSUtils {
      */
     public static boolean getRunInHybridModeProperty() {
 
-        String propertyValue = IdentityUtil.getProperty(RUN_IN_HYBRID_MODE_PROPERTY);
-        return StringUtils.isNotBlank(propertyValue) ? Boolean.parseBoolean(propertyValue) : false;
+        return getConfiguredBooleanValue.apply(RUN_IN_HYBRID_MODE_PROPERTY, false);
     }
 
     /**
@@ -114,13 +103,16 @@ public class JMSUtils {
      *
      * @return Boolean representing the enabled state, or null if the property is not set.
      */
-    @SuppressFBWarnings
     public static Boolean isMBCacheInvalidatorEnabled() {
 
-        String propertyValue = IdentityUtil.getProperty(INVALIDATOR_ENABLED_PROPERTY);
-        return StringUtils.isNotBlank(propertyValue) ? Boolean.parseBoolean(propertyValue) : null;
+        return getConfiguredBooleanValue.apply(INVALIDATOR_ENABLED_PROPERTY, null);
     }
 
+    /**
+     * Creates initial context for the JMS message broker.
+     *
+     * @return InitialContext initialContext.
+     */
     public static InitialContext createInitialContext() throws NamingException, IOException {
 
         Properties properties = new Properties();
@@ -134,6 +126,13 @@ public class JMSUtils {
         return new InitialContext(properties);
     }
 
+    /**
+     * Creates connections using the given connection factory for JMS message brokers.
+     *
+     * @param conFactory connection factory.
+     * @return Connection jms connection
+     * @throws JMSException
+     */
     public static Connection createConnection(ConnectionFactory conFactory) throws JMSException {
 
         String username = getConfiguredStringValue.apply(MB_USERNAME_PROP_VALUE);

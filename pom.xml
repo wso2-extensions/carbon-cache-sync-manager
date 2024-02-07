@@ -55,10 +55,6 @@
             <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-all</artifactId>
-        </dependency>
     </dependencies>
 
     <distributionManagement>
@@ -94,11 +90,6 @@
                 <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.identity.core</artifactId>
                 <version>${carbon.identity.framework.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.activgiemq</groupId>
-                <artifactId>activemq-all</artifactId>
-                <version>${activemq-all.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.rabbitmq.jms</groupId>
@@ -284,7 +275,6 @@
         <org.apache.felix.scr.ds-annotations.version>1.2.10</org.apache.felix.scr.ds-annotations.version>
         <org.wso2.carbon.user.core.version>4.7.0-beta2</org.wso2.carbon.user.core.version>
         <carbon.identity.framework.version>5.18.187</carbon.identity.framework.version>
-        <activemq-all.version>5.16.3</activemq-all.version>
         <log4j-api.version>2.14.1</log4j-api.version>
         <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
         <commons-lang.version>2.6.0.wso2v1</commons-lang.version>

@@ -58,14 +58,13 @@ public class JMSConsumer {
     private MessageConsumer consumer;
     private static volatile JMSConsumer instance;
 
-
     private JMSConsumer() {
 
         try {
             this.initialContext = JMSUtils.createInitialContext();
             this.topic = (Topic) initialContext.lookup("exampleTopic");
             this.connectionFactory = (ConnectionFactory) initialContext.lookup("ConnectionFactory");
-        } catch (NamingException|IOException e) {
+        } catch (NamingException | IOException e) {
             throw new RuntimeException("Error initializing ActiveMQ resources", e);
         }
     }
@@ -108,8 +107,7 @@ public class JMSConsumer {
                     log.debug("Received cache invalidation message.");
                     invalidateCache(((TextMessage) message).getText());
                 } catch (JMSException e) {
-                    String sanitizedErrorMessage = e.getMessage().replace("\n", "").replace("\r", "");
-                    log.error("Error in reading the cache invalidation message. " + e);
+                    log.error("Error in reading the cache invalidation message.", e);
                 }
             });
         } catch (JMSException e) {
