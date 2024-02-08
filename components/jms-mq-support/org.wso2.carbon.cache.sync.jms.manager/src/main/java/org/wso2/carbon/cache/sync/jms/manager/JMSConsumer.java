@@ -43,6 +43,8 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import static org.wso2.carbon.cache.sync.jms.manager.JMSUtils.PRODUCER_RETRY_LIMIT;
+
 /**
  * This class contains the logic for receiving cache invalidation message.
  */
@@ -51,9 +53,9 @@ public class JMSConsumer {
     private static final Log log = LogFactory.getLog(JMSConsumer.class);
 
     private final ConnectionFactory connectionFactory;
-    private final Topic topic;
     private final InitialContext initialContext;
     private Session session;
+    private Topic topic;
     private Connection connection;
     private MessageConsumer consumer;
     private static volatile JMSConsumer instance;
@@ -62,10 +64,9 @@ public class JMSConsumer {
 
         try {
             this.initialContext = JMSUtils.createInitialContext();
-            this.topic = (Topic) initialContext.lookup("exampleTopic");
-            this.connectionFactory = (ConnectionFactory) initialContext.lookup("ConnectionFactory");
-        } catch (NamingException | IOException e) {
-            throw new RuntimeException("Error initializing ActiveMQ resources", e);
+            this.connectionFactory = JMSUtils.getConnectionFactory(initialContext);
+        } catch (NamingException | JMSException| IOException e) {
+            throw new RuntimeException("Error initializing JMS client resources", e);
         }
     }
 
@@ -88,32 +89,34 @@ public class JMSConsumer {
             log.debug("JMS MB based cache invalidation is not enabled.");
             return;
         }
-
-        try {
-            createConnection();
-            // Message listener for the subscriber.
-            consumer.setMessageListener(message -> {
-                if (!(message instanceof TextMessage)) {
-                    // Ignore non-TextMessage.
-                    return;
-                }
-                try {
-                    String sender = message.getStringProperty(JMSUtils.SENDER);
-                    // Skip processing if the sender is the same as the producer.
-                    if (JMSUtils.getProducerName() != null && StringUtils.equals(
-                            JMSUtils.getProducerName(), sender)) {
+        int retryCount=0;
+        while (session == null && retryCount <= PRODUCER_RETRY_LIMIT) {
+            try {
+                // establish the connection over specified topic.
+                startConnection();
+                // Message listener for the subscriber.
+                consumer.setMessageListener(message -> {
+                    if (!(message instanceof TextMessage)) {
+                        // Ignore non-TextMessage.
                         return;
                     }
-                    log.debug("Received cache invalidation message.");
-                    invalidateCache(((TextMessage) message).getText());
-                } catch (JMSException e) {
-                    log.error("Error in reading the cache invalidation message.", e);
-                }
-            });
-        } catch (JMSException e) {
-            String sanitizedErrorMessage = e.getMessage().replace("\n", "")
-                    .replace("\r", "");
-            log.error("Something went wrong with ActiveMQ consumer. " + sanitizedErrorMessage);
+                    try {
+                        String sender = message.getStringProperty(JMSUtils.SENDER);
+                        // Skip processing if the sender is the same as the producer.
+                        if (JMSUtils.getProducerName() != null && StringUtils.equals(
+                                JMSUtils.getProducerName(), sender)) {
+                            return;
+                        }
+                        log.debug("Received cache invalidation message.");
+                        invalidateCache(((TextMessage) message).getText());
+                    } catch (JMSException e) {
+                        log.error("Error in reading the cache invalidation message.", e);
+                    }
+                });
+            } catch (JMSException | NamingException e) {
+                log.error("Error while listening to JMS message broker. ", e);
+                retryCount++;
+            }
         }
     }
 
@@ -190,10 +193,12 @@ public class JMSConsumer {
         }
     }
 
-    private void createConnection() throws JMSException {
+    private void startConnection() throws JMSException, NamingException {
+
         this.connection = JMSUtils.createConnection(connectionFactory);
         connection.start();
         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        this.topic = JMSUtils.getCacheTopic(initialContext, session);
         consumer = session.createConsumer(topic);
     }
 }

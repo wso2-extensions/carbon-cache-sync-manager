@@ -17,6 +17,7 @@
  */
 package org.wso2.carbon.cache.sync.jms.manager;
 
+import com.rabbitmq.jms.admin.RMQConnectionFactory;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
@@ -28,6 +29,8 @@ import java.util.function.UnaryOperator;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
+import javax.jms.Session;
+import javax.jms.Topic;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -58,7 +61,7 @@ public class JMSUtils {
     public static final String CLEAR_ALL_PREFIX = "$__clear__all__$.";
 
     // Default producer retry limit.
-    public static final int PRODUCER_RETRY_LIMIT = 30;
+    public static final int PRODUCER_RETRY_LIMIT = 10;
 
     public static final String SENDER = "sender";
 
@@ -152,5 +155,49 @@ public class JMSUtils {
 
         String propertyValue = IdentityUtil.getProperty(MB_TYPE);
         return StringUtils.isNotBlank(propertyValue) ? propertyValue.trim() : null;
+    }
+
+    /**
+     * Return connection factory based on the broker type.
+     *
+     * @param context Initial JNDI context.
+     * @return ConnectionFactory
+     * @throws NamingException
+     * @throws JMSException
+     */
+    public static ConnectionFactory getConnectionFactory(InitialContext context) throws NamingException, JMSException {
+
+        String brokerType = getBrokerType();;
+        if ("rabbitmq".equalsIgnoreCase(brokerType)) {
+            return createRabbitMQConnectionFactory();
+        } else if ("jms".equalsIgnoreCase(brokerType)){
+            return (ConnectionFactory) context.lookup("ConnectionFactory");
+        }
+        return null;
+    }
+
+    /**
+     * Returns topic for the pub/sub connection.
+     *
+     * @param context Initial JNDI context.
+     * @param session Session of the connection.
+     * @return Topic used to communicate messages.
+     * @throws NamingException
+     * @throws JMSException
+     */
+    public static Topic getCacheTopic(InitialContext context, Session session) throws NamingException, JMSException {
+
+        String brokerType = getBrokerType();;
+        if ("jms".equalsIgnoreCase(brokerType)){
+            return (Topic) context.lookup("exampleTopic");
+        }
+        return session.createTopic(getConfiguredStringValue.apply(JNDI_TOPIC_PROP_NAME_VALUE));
+    }
+
+    private static ConnectionFactory createRabbitMQConnectionFactory() throws JMSException {
+
+        RMQConnectionFactory factory = new RMQConnectionFactory();
+        factory.setUri(getConfiguredStringValue.apply(JNDI_PROVIDER_URL_PROP_VALUE));
+        return factory;
     }
 }
