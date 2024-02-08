@@ -43,28 +43,25 @@ public class JMSUtils {
     public static final String INVALIDATOR_ENABLED_PROPERTY = "CacheInvalidator.MB.Enabled";
     public static final String RUN_IN_HYBRID_MODE_PROPERTY = "CacheInvalidator.MB.HybridMode";
     public static final String PRODUCER_NAME_PROPERTY = "CacheInvalidator.MB.ProducerName";
-
     public static final String JNDI_INITIAL_FACTORY_PROP_NAME = "java.naming.factory.initial";
     public static final String JNDI_PROVIDER_URL_PROP_NAME = "java.naming.provider.url";
     public static final String JNDI_TOPIC_PROP_NAME = "topic.exampleTopic";
-
     public static final String JNDI_INITIAL_FACTORY_PROP_VALUE = "CacheInvalidator.MB.InitialNamingFactory";
     public static final String JNDI_PROVIDER_URL_PROP_VALUE = "CacheInvalidator.MB.ProviderURL";
     public static final String JNDI_TOPIC_PROP_NAME_VALUE = "CacheInvalidator.MB.TopicName";
     public static final String MB_USERNAME_PROP_VALUE = "CacheInvalidator.MB.Username";
     public static final String MB_PASSWORD_PROP_VALUE = "CacheInvalidator.MB.Password";
-
     // Cache name prefix of local cache.
     public static final String LOCAL_CACHE_PREFIX = "$__local__$.";
-
     // Cache name prefix of clear all.
     public static final String CLEAR_ALL_PREFIX = "$__clear__all__$.";
-
     // Default producer retry limit.
     public static final int PRODUCER_RETRY_LIMIT = 10;
-
     public static final String SENDER = "sender";
-
+    public static final String BROKER_TYPE_RABBITMQ = "rabbitmq";
+    public static final String BROKER_TYPE_JMS = "jms";
+    public static final String LOOKUP_CONNECTION_FACTORY = "ConnectionFactory";
+    public static final String LOOKUP_TOPIC = "exampleTopic";
 
     private JMSUtils() {
 
@@ -120,7 +117,7 @@ public class JMSUtils {
 
         Properties properties = new Properties();
         String brokerType = getBrokerType();;
-        if ("jms".equalsIgnoreCase(brokerType)) {
+        if (BROKER_TYPE_JMS.equalsIgnoreCase(brokerType)) {
             properties.put(JNDI_INITIAL_FACTORY_PROP_NAME,
                     getConfiguredStringValue.apply(JNDI_INITIAL_FACTORY_PROP_VALUE));
         }
@@ -168,10 +165,10 @@ public class JMSUtils {
     public static ConnectionFactory getConnectionFactory(InitialContext context) throws NamingException, JMSException {
 
         String brokerType = getBrokerType();;
-        if ("rabbitmq".equalsIgnoreCase(brokerType)) {
+        if (BROKER_TYPE_RABBITMQ.equalsIgnoreCase(brokerType)) {
             return createRabbitMQConnectionFactory();
-        } else if ("jms".equalsIgnoreCase(brokerType)){
-            return (ConnectionFactory) context.lookup("ConnectionFactory");
+        } else if (BROKER_TYPE_JMS.equalsIgnoreCase(brokerType)) {
+            return (ConnectionFactory) context.lookup(LOOKUP_CONNECTION_FACTORY);
         }
         return null;
     }
@@ -188,8 +185,8 @@ public class JMSUtils {
     public static Topic getCacheTopic(InitialContext context, Session session) throws NamingException, JMSException {
 
         String brokerType = getBrokerType();;
-        if ("jms".equalsIgnoreCase(brokerType)){
-            return (Topic) context.lookup("exampleTopic");
+        if (BROKER_TYPE_JMS.equalsIgnoreCase(brokerType)) {
+            return (Topic) context.lookup(LOOKUP_TOPIC);
         }
         return session.createTopic(getConfiguredStringValue.apply(JNDI_TOPIC_PROP_NAME_VALUE));
     }

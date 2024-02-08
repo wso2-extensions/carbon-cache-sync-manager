@@ -65,7 +65,7 @@ public class JMSConsumer {
         try {
             this.initialContext = JMSUtils.createInitialContext();
             this.connectionFactory = JMSUtils.getConnectionFactory(initialContext);
-        } catch (NamingException | JMSException| IOException e) {
+        } catch (NamingException | JMSException | IOException e) {
             throw new RuntimeException("Error initializing JMS client resources", e);
         }
     }
@@ -89,7 +89,7 @@ public class JMSConsumer {
             log.debug("JMS MB based cache invalidation is not enabled.");
             return;
         }
-        int retryCount=0;
+        int retryCount = 0;
         while (session == null && retryCount <= PRODUCER_RETRY_LIMIT) {
             try {
                 // establish the connection over specified topic.

@@ -72,7 +72,7 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
         try {
             this.initialContext = JMSUtils.createInitialContext();
             this.connectionFactory = JMSUtils.getConnectionFactory(initialContext);;
-        } catch (NamingException | JMSException| IOException e) {
+        } catch (NamingException | JMSException | IOException e) {
             throw new RuntimeException("Error initializing JMS client resources", e);
         }
     }
@@ -96,7 +96,7 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
             return;
         }
 
-        try{
+        try {
             startConnection();
         } catch (JMSException | NamingException e) {
             throw new RuntimeException("Error starting JMS connection ", e);
@@ -232,7 +232,7 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
         }
     }
 
-    private void startConnection() throws JMSException, NamingException{
+    private void startConnection() throws JMSException, NamingException {
 
         this.connection = JMSUtils.createConnection(connectionFactory);;
         this.connection.start();
@@ -243,9 +243,9 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
 
     private void retryConnection() {
 
-        int retryCount=0;
+        int retryCount = 0;
         while ((connection == null || session == null) && retryCount <= PRODUCER_RETRY_LIMIT) {
-            try{
+            try {
                 startConnection();
                 log.debug("Attempting retry JMS Producer connection.");
             } catch (JMSException | NamingException e) {
