@@ -35,7 +35,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * Util class for the ActiveMQ cache manager Service.
+ * Util class for the JMS cache manager Service.
  */
 public class JMSUtils {
 
@@ -99,7 +99,7 @@ public class JMSUtils {
     }
 
     /**
-     * Checks if the ActiveMQ Cache Invalidator is enabled.
+     * Checks if the Cache Invalidator is enabled.
      *
      * @return Boolean representing the enabled state, or null if the property is not set.
      */

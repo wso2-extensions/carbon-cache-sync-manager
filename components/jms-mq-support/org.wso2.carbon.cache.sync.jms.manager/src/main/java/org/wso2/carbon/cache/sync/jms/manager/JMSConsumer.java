@@ -107,7 +107,6 @@ public class JMSConsumer {
                                 JMSUtils.getProducerName(), sender)) {
                             return;
                         }
-                        log.debug("Received cache invalidation message.");
                         invalidateCache(((TextMessage) message).getText());
                     } catch (JMSException e) {
                         log.error("Error in reading the cache invalidation message.", e);
