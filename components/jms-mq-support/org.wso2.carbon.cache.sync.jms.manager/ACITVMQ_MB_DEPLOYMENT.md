@@ -4,7 +4,7 @@ This will guide you to setup the ActiveMQ Message Broker to communicate over a t
 
 ### Steps to follow:
 
-1. Download ActiveMQ(classic): [ActiveMQ 5.18.3](https://activemq.apache.org/activemq-5018003-release)
+1. Download ActiveMQ(classic): [ActiveMQ 5.16.3](https://activemq.apache.org/activemq-5016003-release) or above
 2. Extract the downloaded zip file.
 3. Start the ActiveMQ broker by executing the following command from the extracted directory.
     - `./bin/activemq console` - to run in interactive mode

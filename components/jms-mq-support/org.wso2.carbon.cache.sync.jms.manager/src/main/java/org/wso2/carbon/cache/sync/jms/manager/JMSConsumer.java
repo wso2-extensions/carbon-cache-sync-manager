@@ -15,10 +15,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.cache.sync.active.mq.manager;
+package org.wso2.carbon.cache.sync.jms.manager;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +25,7 @@ import org.wso2.carbon.caching.impl.CacheImpl;
 import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequestSender;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,28 +40,42 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
-import static org.wso2.carbon.cache.sync.active.mq.manager.CacheSyncUtils.getActiveMQBrokerUrl;
-import static org.wso2.carbon.cache.sync.active.mq.manager.CacheSyncUtils.getCacheInvalidationTopic;
+import static org.wso2.carbon.cache.sync.jms.manager.JMSUtils.PRODUCER_RETRY_LIMIT;
 
 /**
  * This class contains the logic for receiving cache invalidation message.
  */
-public class ActiveMQConsumer {
+public class JMSConsumer {
 
-    private static final Log log = LogFactory.getLog(ActiveMQConsumer.class);
+    private static final Log log = LogFactory.getLog(JMSConsumer.class);
 
-    private static volatile ActiveMQConsumer instance;
+    private final ConnectionFactory connectionFactory;
+    private final InitialContext initialContext;
+    private Session session;
+    private Topic topic;
+    private Connection connection;
+    private MessageConsumer consumer;
+    private static volatile JMSConsumer instance;
 
-    private ActiveMQConsumer() {
+    private JMSConsumer() {
 
+        try {
+            this.initialContext = JMSUtils.createInitialContext();
+            this.connectionFactory = JMSUtils.getConnectionFactory(initialContext);
+        } catch (NamingException | JMSException | IOException e) {
+            throw new RuntimeException("Error initializing JMS client resources", e);
+        }
     }
 
-    public static ActiveMQConsumer getInstance() {
+    public static JMSConsumer getInstance() {
+
         if (instance == null) {
-            synchronized (ActiveMQConsumer.class) {
+            synchronized (JMSConsumer.class) {
                 if (instance == null) {
-                    instance = new ActiveMQConsumer();
+                    instance = new JMSConsumer();
                 }
             }
         }
@@ -71,45 +85,37 @@ public class ActiveMQConsumer {
     @SuppressFBWarnings
     public void startService() {
 
-        if (!CacheSyncUtils.isActiveMQCacheInvalidatorEnabled()) {
-            log.debug("ActiveMQ based cache invalidation is not enabled.");
+        if (!JMSUtils.isMBCacheInvalidatorEnabled()) {
+            log.debug("JMS MB based cache invalidation is not enabled.");
             return;
         }
-
-        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(getActiveMQBrokerUrl());
-
-        try {
-            Connection connection = connectionFactory.createConnection();
-            connection.start();
-
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            Topic topic = session.createTopic(getCacheInvalidationTopic());
-            MessageConsumer consumer = session.createConsumer(topic);
-
-            // Message listener for the subscriber.
-            consumer.setMessageListener(message -> {
-                if (!(message instanceof TextMessage)) {
-                    // Ignore non-TextMessage.
-                    return;
-                }
-                try {
-                    String sender = message.getStringProperty(CacheSyncUtils.SENDER);
-                    // Skip processing if the sender is the same as the producer.
-                    if (CacheSyncUtils.getProducerName() != null && StringUtils.equals(
-                            CacheSyncUtils.getProducerName(), sender)) {
+        int retryCount = 0;
+        while (session == null && retryCount <= PRODUCER_RETRY_LIMIT) {
+            try {
+                // establish the connection over specified topic.
+                startConnection();
+                // Message listener for the subscriber.
+                consumer.setMessageListener(message -> {
+                    if (!(message instanceof TextMessage)) {
+                        // Ignore non-TextMessage.
                         return;
                     }
-                    log.debug("Received cache invalidation message.");
-                    invalidateCache(((TextMessage) message).getText());
-                } catch (JMSException e) {
-                    String sanitizedErrorMessage = e.getMessage().replace("\n", "").replace("\r", "");
-                    log.error("Error in reading the cache invalidation message. " + sanitizedErrorMessage);
-                }
-            });
-        } catch (JMSException e) {
-            String sanitizedErrorMessage = e.getMessage().replace("\n", "")
-                    .replace("\r", "");
-            log.error("Something went wrong with ActiveMQ consumer. " + sanitizedErrorMessage);
+                    try {
+                        String sender = message.getStringProperty(JMSUtils.SENDER);
+                        // Skip processing if the sender is the same as the producer.
+                        if (JMSUtils.getProducerName() != null && StringUtils.equals(
+                                JMSUtils.getProducerName(), sender)) {
+                            return;
+                        }
+                        invalidateCache(((TextMessage) message).getText());
+                    } catch (JMSException e) {
+                        log.error("Error in reading the cache invalidation message.", e);
+                    }
+                });
+            } catch (JMSException | NamingException e) {
+                log.error("Error while listening to JMS message broker. ", e);
+                retryCount++;
+            }
         }
     }
 
@@ -144,7 +150,7 @@ public class ActiveMQConsumer {
                 CacheManager cacheMgr = Caching.getCacheManagerFactory().getCacheManager(cacheManager);
                 Cache<Object, Object> cacheObject = cacheMgr.getCache(cache);
                 if (cacheObject instanceof CacheImpl) {
-                    if (CacheSyncUtils.CLEAR_ALL_PREFIX.equals(cacheKey)) {
+                    if (JMSUtils.CLEAR_ALL_PREFIX.equals(cacheKey)) {
                         ((CacheImpl) cacheObject).removeAllLocal();
                     } else {
                         ((CacheImpl) cacheObject).removeLocal(cacheKey);
@@ -155,7 +161,7 @@ public class ActiveMQConsumer {
             }
 
             // If hybrid mode is enabled pass invalidation msg to local cluster.
-            if (CacheSyncUtils.getRunInHybridModeProperty()) {
+            if (JMSUtils.getRunInHybridModeProperty()) {
 
                 CacheEntryInfo cacheEntryInfo = new CacheEntryInfo(cacheManager,
                         cache, cacheKey, tenantDomain, Integer.valueOf(tenantId));
@@ -167,5 +173,31 @@ public class ActiveMQConsumer {
         } else {
             log.debug("Input doesn't match the expected msg pattern.");
         }
+    }
+
+    public void closeResources() {
+
+        try {
+            if (consumer != null) {
+                consumer.close();
+            }
+            if (session != null) {
+                session.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (JMSException e) {
+            log.error("Error closing ActiveMQ resources", e);
+        }
+    }
+
+    private void startConnection() throws JMSException, NamingException {
+
+        this.connection = JMSUtils.createConnection(connectionFactory);
+        connection.start();
+        session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        this.topic = JMSUtils.getCacheTopic(initialContext, session);
+        consumer = session.createConsumer(topic);
     }
 }
