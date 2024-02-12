@@ -50,6 +50,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import static org.wso2.carbon.cache.sync.jms.manager.JMSUtils.PRODUCER_RETRY_LIMIT;
+import static org.wso2.carbon.cache.sync.jms.manager.JMSUtils.isAllowedToPropagate;
 
 /**
  * This class contains the logic for sending cache invalidation message.
@@ -136,6 +137,14 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
             log.debug("Sending cache invalidation message to other cluster nodes for '" +
                     cacheEntryInfo.getCacheKey() + "' of the cache '" + cacheEntryInfo.getCacheName()
                     + "' of the cache manager '" + cacheEntryInfo.getCacheManagerName() + "'");
+        }
+
+        if (!isAllowedToPropagate(cacheEntryInfo.getCacheManagerName(), cacheEntryInfo.getCacheName())) {
+            if (log.isDebugEnabled()) {
+                log.debug("Cache " + cacheEntryInfo.getCacheKey() + " is not allowed to propagate to " +
+                        "other clusters as per configurations.");
+            }
+            return;
         }
 
         // Send the cluster message.
