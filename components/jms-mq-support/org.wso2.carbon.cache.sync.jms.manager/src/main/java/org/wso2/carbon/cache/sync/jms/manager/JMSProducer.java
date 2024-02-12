@@ -133,18 +133,18 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
             return;
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Sending cache invalidation message to other cluster nodes for '" +
-                    cacheEntryInfo.getCacheKey() + "' of the cache '" + cacheEntryInfo.getCacheName()
-                    + "' of the cache manager '" + cacheEntryInfo.getCacheManagerName() + "'");
-        }
-
         if (!isAllowedToPropagate(cacheEntryInfo.getCacheManagerName(), cacheEntryInfo.getCacheName())) {
             if (log.isDebugEnabled()) {
                 log.debug("Cache " + cacheEntryInfo.getCacheKey() + " is not allowed to propagate to " +
                         "other clusters as per configurations.");
             }
             return;
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Sending cache invalidation message to other cluster nodes for '" +
+                    cacheEntryInfo.getCacheKey() + "' of the cache '" + cacheEntryInfo.getCacheName()
+                    + "' of the cache manager '" + cacheEntryInfo.getCacheManagerName() + "'");
         }
 
         // Send the cluster message.

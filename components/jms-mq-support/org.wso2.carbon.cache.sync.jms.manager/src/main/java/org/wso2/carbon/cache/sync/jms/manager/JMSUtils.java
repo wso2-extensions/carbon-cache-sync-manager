@@ -230,7 +230,6 @@ public class JMSUtils {
         return true;
     }
 
-
     private static Map<String, List<String>> getMessageBrokerCacheList() {
 
         if (mbCacheListConfigurationHolder == null) {
