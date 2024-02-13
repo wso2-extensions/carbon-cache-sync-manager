@@ -20,6 +20,8 @@ package org.wso2.carbon.cache.sync.jms.manager;
 import com.rabbitmq.jms.admin.RMQConnectionFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityConstants;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.util.IdentityConfigParser;
@@ -50,6 +52,7 @@ import javax.xml.namespace.QName;
  */
 public class JMSUtils {
 
+    private static final Log log = LogFactory.getLog(JMSUtils.class);
     public static final String MB_TYPE = "CacheInvalidator.MB.Type";
     public static final String INVALIDATOR_ENABLED_PROPERTY = "CacheInvalidator.MB.Enabled";
     public static final String RUN_IN_HYBRID_MODE_PROPERTY = "CacheInvalidator.MB.HybridMode";
@@ -268,7 +271,8 @@ public class JMSUtils {
                     String cacheManagerName = cacheManager.getAttributeValue(new QName(
                             IdentityConstants.CACHE_MANAGER_NAME));
                     if (StringUtils.isBlank(cacheManagerName)) {
-                        throw IdentityRuntimeException.error("CacheManager name not defined correctly");
+                        log.warn("CacheManager name not defined correctly");
+                        continue;
                     }
                     Iterator<OMElement> caches = cacheManager.getChildrenWithName(
                             new QName(IdentityCoreConstants.IDENTITY_DEFAULT_NAMESPACE, IdentityConstants.CACHE));
@@ -278,7 +282,8 @@ public class JMSUtils {
                             OMElement cache = caches.next();
                             String cacheName = cache.getAttributeValue(new QName(IdentityConstants.CACHE_NAME));
                             if (StringUtils.isBlank(cacheName)) {
-                                throw IdentityRuntimeException.error("Cache name not defined correctly");
+                                log.warn("Cache name not defined correctly");
+                                continue;
                             }
                             cacheNames.add(cacheName);
                         }
