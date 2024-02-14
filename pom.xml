@@ -299,6 +299,7 @@
         <commons-collections.wso2.osgi.version.range>[3.2.0,4.0.0)</commons-collections.wso2.osgi.version.range>
         <org.wso2.carbon.user.core.version.range>[4.0.0,5.0.0)</org.wso2.carbon.user.core.version.range>
         <javax.cache.imp.range>[1.0,2)</javax.cache.imp.range>
+        <javax.jms.imp.range>[2.0,3)</javax.jms.imp.range>
         <carbon.kernel.imp.pkg.version.range>[4.6.0, 5.0.0)</carbon.kernel.imp.pkg.version.range>
     </properties>
 
