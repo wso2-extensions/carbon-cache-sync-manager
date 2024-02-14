@@ -18,10 +18,22 @@
 package org.wso2.carbon.cache.sync.jms.manager;
 
 import com.rabbitmq.jms.admin.RMQConnectionFactory;
+import org.apache.axiom.om.OMElement;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.identity.base.IdentityConstants;
+import org.wso2.carbon.identity.base.IdentityRuntimeException;
+import org.wso2.carbon.identity.core.util.IdentityConfigParser;
+import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
@@ -33,12 +45,14 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.xml.namespace.QName;
 
 /**
  * Util class for the JMS cache manager Service.
  */
 public class JMSUtils {
 
+    private static final Log log = LogFactory.getLog(JMSUtils.class);
     public static final String MB_TYPE = "CacheInvalidator.MB.Type";
     public static final String INVALIDATOR_ENABLED_PROPERTY = "CacheInvalidator.MB.Enabled";
     public static final String RUN_IN_HYBRID_MODE_PROPERTY = "CacheInvalidator.MB.HybridMode";
@@ -62,6 +76,10 @@ public class JMSUtils {
     public static final String BROKER_TYPE_JMS = "jms";
     public static final String LOOKUP_CONNECTION_FACTORY = "ConnectionFactory";
     public static final String LOOKUP_TOPIC = "exampleTopic";
+    public static final String CACHE_INVALIDATOR_ELEMENT = "CacheInvalidator";
+    public static final String CACHE_MANAGER_ELEMENT = "CacheManager";
+
+    private static Map<String, List<String>> mbCacheListConfigurationHolder;
 
     private JMSUtils() {
 
@@ -191,10 +209,88 @@ public class JMSUtils {
         return session.createTopic(getConfiguredStringValue.apply(JNDI_TOPIC_PROP_NAME_VALUE));
     }
 
+    /**
+     * Check the cache in the denylist before sync across clusters.
+     *
+     * @param cacheManager cacheManager name
+     * @param cacheName cacheName
+     * @return whether the cache is allowed or not.
+     */
+    public static boolean isAllowedToPropagate(String cacheManager, String cacheName) {
+
+        Map<String, List<String>> cacheDenyList = getMessageBrokerCacheList();
+        if (cacheDenyList.size() == 0) {
+            return true;
+        }
+        String cache = getCacheName(cacheName);
+        for (Map.Entry<String, List<String>> entry : cacheDenyList.entrySet()) {
+            if (StringUtils.equalsIgnoreCase(cacheManager, entry.getKey())) {
+                if (entry.getValue().contains(cache)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static Map<String, List<String>> getMessageBrokerCacheList() {
+
+        if (mbCacheListConfigurationHolder == null) {
+            buildMBCacheListConfig();
+        }
+        return mbCacheListConfigurationHolder;
+    }
+
     private static ConnectionFactory createRabbitMQConnectionFactory() throws JMSException {
 
         RMQConnectionFactory factory = new RMQConnectionFactory();
         factory.setUri(getConfiguredStringValue.apply(JNDI_PROVIDER_URL_PROP_VALUE));
         return factory;
+    }
+
+    private static String getCacheName(String cacheName) {
+
+        // Cache names are by default prefixed with "$__local__$." or "$__clear__all__$."
+        String[] cacheNameParts = cacheName.split("\\.");
+        if (cacheNameParts.length >= 2) {
+            return cacheNameParts[1];
+        }
+        return null;
+    }
+
+    private static void buildMBCacheListConfig() {
+
+        mbCacheListConfigurationHolder = new HashMap<>();
+        OMElement cacheConfig = IdentityConfigParser.getInstance().getConfigElement(CACHE_INVALIDATOR_ELEMENT);
+        if (cacheConfig != null) {
+            Iterator<OMElement> cacheManagers = cacheConfig.getChildrenWithName(
+                    new QName(IdentityCoreConstants.IDENTITY_DEFAULT_NAMESPACE, CACHE_MANAGER_ELEMENT));
+            if (cacheManagers != null) {
+                while (cacheManagers.hasNext()) {
+                    OMElement cacheManager = cacheManagers.next();
+                    String cacheManagerName = cacheManager.getAttributeValue(new QName(
+                            IdentityConstants.CACHE_MANAGER_NAME));
+                    if (StringUtils.isBlank(cacheManagerName)) {
+                        log.warn("CacheManager name not defined correctly");
+                        continue;
+                    }
+                    Iterator<OMElement> caches = cacheManager.getChildrenWithName(
+                            new QName(IdentityCoreConstants.IDENTITY_DEFAULT_NAMESPACE, IdentityConstants.CACHE));
+                    List<String> cacheNames = new ArrayList<>();
+                    if (caches != null) {
+                        while (caches.hasNext()) {
+                            OMElement cache = caches.next();
+                            String cacheName = cache.getAttributeValue(new QName(IdentityConstants.CACHE_NAME));
+                            if (StringUtils.isBlank(cacheName)) {
+                                log.warn("Cache name not defined correctly");
+                                continue;
+                            }
+                            cacheNames.add(cacheName);
+                        }
+                    }
+                    mbCacheListConfigurationHolder.put(cacheManagerName, cacheNames);
+                }
+            }
+        }
     }
 }
