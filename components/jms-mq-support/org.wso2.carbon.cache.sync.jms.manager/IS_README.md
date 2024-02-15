@@ -1,5 +1,6 @@
 ### How to Build
-1. Build the maven project and copy the jar file to the `<IS_HOME>/repository/components/dropins` directory.
+1. Add the `org.wso2.carbon.cache.sync.jms.manager-xx.jar` jar to the `<IS_HOME>/repository/components/dropins` directory.
+   - if you don't have the jar, you can build the project and find it in the `components/jms-mq-support/org.wso2.carbon.cache.sync.jms.manager/target` directory
 2. Add the following identity.xml.j2 template configurations
 ```yaml
   {% if cache_invalidator.mb.enabled is defined %}
@@ -47,3 +48,5 @@ password="guest"
 [server.cache]
 propagation_enabled="true"
  ```
+4. Add the `jms-api_2-2.0.1.wso2v1.jar` jar to the `<IS_HOME>/repository/components/dropins` directory.
+  - if you don't have the jar, you can build the project and find it in the `components/jms-api-orbit/2.0.1.wso2v1/target` directory 
