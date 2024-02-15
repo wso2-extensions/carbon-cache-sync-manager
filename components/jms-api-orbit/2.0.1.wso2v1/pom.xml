@@ -18,14 +18,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <groupId>org.wso2.carbon.cache.sync.manager</groupId>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.wso2.orbit.org.apache.jm.api</groupId>
-    <artifactId>jms-api_2</artifactId>
+    <artifactId>javax.jms-api</artifactId>
     <packaging>bundle</packaging>
-    <name>javax.jms.api.2.0.1 orbit bundle</name>
+    <name>WSO2 Carbon Orbit - Javax JMS API</name>
     <version>2.0.1.wso2v1</version>
     <description>
-        org.wso2.carbon.ant. This bundle will represent Ant
+        This bundle will represent javax.jms-api 2.0.1.
     </description>
     <url>http://wso2.org</url>
 
