@@ -29,3 +29,7 @@ There are two viable deployment patterns for handling the cache invalidation mes
 #### Connect with RabbitMQ
 
 - Setup IS for RabbitMQ: [Refer](RABBITMQ_README.md)
+
+#### Connect with IBM MQ
+
+- Setup IS for IBM MQ: [Refer](IBMMQ_README.md)
