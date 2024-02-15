@@ -69,7 +69,7 @@ public class JMSManagerServiceComponent {
             scheduler.shutdownNow();
         }
 
-        // Shutdown ActiveMQ producer.
+        // Shutdown JMS producer.
         JMSProducer.getInstance().shutdownExecutorService();
         JMSConsumer.getInstance().closeResources();
 
