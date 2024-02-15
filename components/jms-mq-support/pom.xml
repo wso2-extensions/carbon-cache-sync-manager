@@ -37,6 +37,5 @@
 
     <modules>
         <module>org.wso2.carbon.cache.sync.jms.manager</module>
-        <module>jms-api-orbit</module>
     </modules>
 </project>
