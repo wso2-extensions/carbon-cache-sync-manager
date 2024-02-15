@@ -188,7 +188,7 @@ public class JMSConsumer {
                 connection.close();
             }
         } catch (JMSException e) {
-            log.error("Error closing ActiveMQ resources", e);
+            log.error("Error closing JMS resources", e);
         }
     }
 

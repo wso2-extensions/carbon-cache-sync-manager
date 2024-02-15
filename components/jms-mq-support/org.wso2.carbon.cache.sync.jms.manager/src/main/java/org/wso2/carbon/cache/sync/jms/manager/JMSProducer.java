@@ -180,7 +180,7 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
             }
             producer.send(message);
         } catch (JMSException e) {
-            log.error("Something went wrong with ActiveMQ producer connection." + e);
+            log.error("Something went wrong with JMS producer connection." + e);
         }
     }
 
@@ -237,7 +237,7 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
                 connection.close();
             }
         } catch (JMSException e) {
-            log.error("Error closing ActiveMQ resources.", e);
+            log.error("Error closing JMS resources.", e);
         }
     }
 
