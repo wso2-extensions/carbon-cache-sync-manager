@@ -26,7 +26,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.cache.sync.manager</groupId>
     <artifactId>carbon-cache-sync-manager</artifactId>
-    <version>2.0.2-SNAPSHOT</version>
+    <version>2.0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WSO2 Carbon Cache Sync module</name>
     <url>http://wso2.org</url>
@@ -72,6 +72,7 @@
 
     <modules>
         <module>components/jms-mq-support</module>
+        <module>components/jms-api-orbit/2.0.1.wso2v1</module>
     </modules>
 
     <dependencyManagement>
@@ -299,6 +300,7 @@
         <commons-collections.wso2.osgi.version.range>[3.2.0,4.0.0)</commons-collections.wso2.osgi.version.range>
         <org.wso2.carbon.user.core.version.range>[4.0.0,5.0.0)</org.wso2.carbon.user.core.version.range>
         <javax.cache.imp.range>[1.0,2)</javax.cache.imp.range>
+        <javax.jms.imp.range>[2.0,3)</javax.jms.imp.range>
         <carbon.kernel.imp.pkg.version.range>[4.6.0, 5.0.0)</carbon.kernel.imp.pkg.version.range>
     </properties>
 
