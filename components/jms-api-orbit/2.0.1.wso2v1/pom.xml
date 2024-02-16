@@ -19,10 +19,11 @@
 
     <parent>
         <groupId>org.wso2.carbon.cache.sync.manager</groupId>
-        <artifactId>jms-api-orbit</artifactId>
-        <relativePath>../pom.xml</relativePath>
+        <artifactId>carbon-cache-sync-manager</artifactId>
+        <relativePath>../../../pom.xml</relativePath>
         <version>2.0.6-SNAPSHOT</version>
     </parent>
+
     <groupId>org.wso2.carbon.cache.sync.manager</groupId>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>javax.jms-api-2.0.1.wso2v1</artifactId>
