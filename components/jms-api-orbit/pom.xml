@@ -27,7 +27,7 @@
 
     <groupId>org.wso2.carbon.cache.sync.manager</groupId>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>jms-api-support</artifactId>
+    <artifactId>jms-api-orbit</artifactId>
     <packaging>pom</packaging>
     <name>WSO2 Carbon - JMS API Aggregator Module</name>
     <description>
