@@ -1,6 +1,6 @@
 ## Configure the WSO2 IS
 
-1. Follow the instructions in the [IS_README.md](../IS_README.md)
+1. Follow the instructions in the [IS_README.md](../common-resources/IS_README.md)
 2. Then add the following config(update it with your values) in the deployment.toml file
   ```
   [cache_invalidator.mb]

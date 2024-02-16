@@ -8,29 +8,29 @@ There are two viable deployment patterns for handling the cache invalidation mes
    - Each node can publish/subscribe to cache invalidation message
    - No need configure Hazlecast clustering.
    
-![all_node_connected.png](all_node_connected.png)
+![all_node_connected.png](resources/common-resources/all_node_connected.png)
 
 2. Hazlecast takes care of invalidation message propagation within a cluster, whereas MB will do the sharing across different clusters
     - Here only one node from each data-center is connected to the MB and passes invalidation message across clusters 
    
-![hybrid_approach.png](hybrid_approach.png)
+![hybrid_approach.png](resources/common-resources/hybrid_approach.png)
 
 ### Try Out
 
 #### Common
 
-- Common Setup for IS: [Refer](IS_README.md)
+- Common Setup for IS: [Refer](resources/common-resources/IS_README.md)
 
 #### Connect with ActiveMQ
 
-1. Setup IS for ActiveMQ: [Refer](ACTIVEMQ_README.md)
-2. Deploy ActiveMQ Message Broker:  [Refer](ACITVMQ_MB_DEPLOYMENT.md)
+1. Setup IS for ActiveMQ: [Refer](resources/active-mq-resources/ACTIVEMQ_README.md)
+2. Deploy ActiveMQ Message Broker:  [Refer](resources/active-mq-resources/ACITVMQ_MB_DEPLOYMENT.md)
 
 #### Connect with RabbitMQ
 
-- Setup IS for RabbitMQ: [Refer](RABBITMQ_README.md)
+- Setup IS for RabbitMQ: [Refer](resources/common-resources/RABBITMQ_README.md)
 
 #### Connect with IBM MQ
 
-1. Setup IS for IBM MQ: [Refer](ibm-mq-resoucrces/IBMMQ_README.md)
-2. Deploy IBM MQ Message Broker: [Refer](ibm-mq-resoucrces/IBMMQ_MB_DEPLOYMENT.md)
+1. Setup IS for IBM MQ: [Refer](resources/ibm-mq-resources/IBMMQ_README.md)
+2. Deploy IBM MQ Message Broker: [Refer](resources/ibm-mq-resources/IBMMQ_MB_DEPLOYMENT.md)
