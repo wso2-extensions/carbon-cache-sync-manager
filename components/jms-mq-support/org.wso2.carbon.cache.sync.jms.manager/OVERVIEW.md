@@ -3,8 +3,8 @@ This connector supports cache invalidation message exchange across multi-cluster
 
 ### Why is it mandatory to use this connector?
 
-Applications are often deployed across multiple centers to ensure disaster recovery and availability, aiming to achieve good performance and reliability. However, this multi-center deployment introduces challenges with caching, particularly the cache coherence problem.
-The cache coherence issue is fixed within a cluster by relying on Hazelcast to pass cache invalidation messages. However, Hazelcast cannot transmit these messages across separate clusters.
+Applications are often deployed across multiple centers to ensure high availability and better disaster recovery, aiming to achieve good performance and reliability. However, this multi-center deployment introduces challenges with caching, particularly the cache coherence problem.
+Within a single cluster the cache coherence issue is fixed by relying on Hazelcast (to pass cache-invalidation/sync messages). However, Hazelcast cannot be used to transmit sync messages across separate clusters.
 
 For example, let's consider a scenario where two clusters of WSO2 Identity Server (IS) are deployed, Cluster A and Cluster B. If Cluster A issues an access token and subsequently receives a token revocation request, Cluster A may not be aware of this event. Consequently, Cluster A continues to treat the previously issued access token as valid in its cache, even though it has been revoked by Cluster B. This inconsistency in cache states across clusters leads to the cache coherence problem. 
 
