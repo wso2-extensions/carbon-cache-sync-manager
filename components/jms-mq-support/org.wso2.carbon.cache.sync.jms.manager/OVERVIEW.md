@@ -13,8 +13,9 @@ Attempting to deploy IS as multiple Active-Active clusters exacerbates the cache
 ### Deployment
 
 Need to deploy the Message Broker (MB) in a central location, and configure the IS servers to connect to the MB. The MB acts as a central point for cache invalidation message exchange across clusters. The MB is responsible for propagating cache invalidation messages across clusters, ensuring that the cache states are consistent across all clusters, whereas Hazlecast takes care of invalidation message propagation within a cluster.
-    - Here only one node from each data-center is connected to the MB and passes invalidation message across clusters
-    - Need to have Database in sync across data-centers. This is a must for this approach to work.
+    
+- Here only one node from each data-center is connected to the MB and passes invalidation message across clusters
+- Need to have Database in sync across data-centers. This is a must for this approach to work.
    
 ![hybrid_approach.png](resources/common-resources/hybrid_approach.png)
 
