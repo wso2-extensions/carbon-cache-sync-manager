@@ -18,7 +18,9 @@ The Message Broker(MB) acts as a central point for cache invalidation message ex
    
 ![hybrid_approach.png](resources/common-resources/hybrid_approach.png)
 
-### Try Out
+### Getting started
+
+To get started with the connector, you can follow the below docs based on the Message Broker you are using.
 
 - **Common**
   - Common Setup for IS: [Refer](resources/common-resources/IS_README.md)
@@ -37,4 +39,4 @@ The Message Broker(MB) acts as a central point for cache invalidation message ex
 
 ### Performance Improvement
 
-We can improve the performance of Message Brokers by reducing the cache invalidation messages that needs to be send across. Ideally we don't need sync clusters for all the cache. Refer [Performance Improvement](resources/common-resources/PERFORMANCE_IMPROVEMENT.md) for more details.
+We can improve the performance of Message Brokers by reducing the cache invalidation messages that needs to be send across. Ideally we don't need sync clusters for all the flows. Refer [Performance Improvement](resources/common-resources/PERFORMANCE_IMPROVEMENT.md) for more details.
