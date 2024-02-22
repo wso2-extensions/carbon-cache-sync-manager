@@ -12,8 +12,7 @@ Attempting to deploy IS as multiple Active-Active clusters exacerbates the cache
 
 ### Deployment
 
-Need to deploy the Message Broker (MB) in a central location, and configure the IS servers to connect to the MB. The MB acts as a central point for cache invalidation message exchange across clusters. The MB is responsible for propagating cache invalidation messages across clusters, ensuring that the cache states are consistent across all clusters, whereas Hazlecast takes care of invalidation message propagation within a cluster.
-    
+The Message Broker(MB) acts as a central point for cache invalidation message exchange across clusters. Need to deploy the MB in a central location, and configure the IS servers to connect to the MB. The MB is responsible for propagating cache invalidation messages across clusters, ensuring that the cache states are consistent across all clusters, whereas Hazlecast takes care of invalidation message propagation within a cluster.
 - Here only one node from each data-center is connected to the MB and passes invalidation message across clusters
 - Need to have Database in sync across data-centers. This is a must for this approach to work.
    
@@ -21,23 +20,19 @@ Need to deploy the Message Broker (MB) in a central location, and configure the 
 
 ### Try Out
 
-#### Common
+- **Common**
+  - Common Setup for IS: [Refer](resources/common-resources/IS_README.md)
 
-- Common Setup for IS: [Refer](resources/common-resources/IS_README.md)
+- **Connect with ActiveMQ**
+  1. Setup IS for ActiveMQ: [Refer](resources/active-mq-resources/ACTIVEMQ_README.md)
+  2. Deploy ActiveMQ Message Broker:  [Refer](resources/active-mq-resources/ACITVMQ_MB_DEPLOYMENT.md)
 
-#### Connect with ActiveMQ
+- **Connect with RabbitMQ**
+  - Setup IS for RabbitMQ: [Refer](resources/common-resources/RABBITMQ_README.md)
 
-1. Setup IS for ActiveMQ: [Refer](resources/active-mq-resources/ACTIVEMQ_README.md)
-2. Deploy ActiveMQ Message Broker:  [Refer](resources/active-mq-resources/ACITVMQ_MB_DEPLOYMENT.md)
-
-#### Connect with RabbitMQ
-
-- Setup IS for RabbitMQ: [Refer](resources/common-resources/RABBITMQ_README.md)
-
-#### Connect with IBM MQ
-
-1. Setup IS for IBM MQ: [Refer](resources/ibm-mq-resources/IBMMQ_README.md)
-2. Deploy IBM MQ Message Broker: [Refer](resources/ibm-mq-resources/IBMMQ_MB_DEPLOYMENT.md)
+- **Connect with IBM MQ**
+    1. Setup IS for IBM MQ: [Refer](resources/ibm-mq-resources/IBMMQ_README.md)
+    2. Deploy IBM MQ Message Broker: [Refer](resources/ibm-mq-resources/IBMMQ_MB_DEPLOYMENT.md)
 
 
 ### Performance Improvement
