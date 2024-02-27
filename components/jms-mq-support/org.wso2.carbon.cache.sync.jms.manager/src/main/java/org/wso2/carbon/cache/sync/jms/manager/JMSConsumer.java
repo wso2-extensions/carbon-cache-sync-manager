@@ -44,6 +44,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import static org.wso2.carbon.cache.sync.jms.manager.JMSUtils.PRODUCER_RETRY_LIMIT;
+import static org.wso2.carbon.cache.sync.jms.manager.JMSUtils.getProducerName;
 
 /**
  * This class contains the logic for receiving cache invalidation message.
@@ -195,9 +196,17 @@ public class JMSConsumer {
     private void startConnection() throws JMSException, NamingException {
 
         this.connection = JMSUtils.createConnection(connectionFactory);
+        boolean isDurableSubscription = JMSUtils.isDurableSubscriber();
+        if (isDurableSubscription) {
+            connection.setClientID(JMSUtils.DURABLE_CON_CLIENT_ID_PREFIX + getProducerName());
+        }
         connection.start();
         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         this.topic = JMSUtils.getCacheTopic(initialContext, session);
-        consumer = session.createConsumer(topic);
+        if (isDurableSubscription) {
+            consumer = session.createDurableSubscriber(topic, JMSUtils.DURABLE_SUB_NAME_PREFIX + getProducerName());
+        } else {
+            consumer = session.createConsumer(topic);
+        }
     }
 }
