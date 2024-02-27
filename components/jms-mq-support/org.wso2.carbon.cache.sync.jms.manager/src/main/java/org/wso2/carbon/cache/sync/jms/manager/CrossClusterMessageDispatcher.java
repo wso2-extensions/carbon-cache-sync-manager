@@ -33,6 +33,11 @@ public class CrossClusterMessageDispatcher implements CacheInvalidationRequestPr
     @Override
     public void propagate(ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
 
+        if (!JMSUtils.isMBCacheInvalidatorEnabled()) {
+            log.debug("MB based cache invalidation is not enabled");
+            return;
+        }
+
         if (JMSUtils.getRunInHybridModeProperty()) {
             log.debug("Sending cache invalidation message across multiple clustering.");
             JMSProducer producer = JMSProducer.getInstance();
