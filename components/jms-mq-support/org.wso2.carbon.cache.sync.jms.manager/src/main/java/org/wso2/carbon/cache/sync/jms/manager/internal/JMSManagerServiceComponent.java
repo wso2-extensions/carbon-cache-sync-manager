@@ -19,24 +19,18 @@ package org.wso2.carbon.cache.sync.jms.manager.internal;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.wso2.carbon.cache.sync.jms.manager.CrossClusterMessageDispatcher;
+import org.wso2.carbon.cache.sync.jms.manager.HybridModeCoordinatorListener;
 import org.wso2.carbon.cache.sync.jms.manager.JMSConsumer;
 import org.wso2.carbon.cache.sync.jms.manager.JMSProducer;
 import org.wso2.carbon.cache.sync.jms.manager.JMSUtils;
+import org.wso2.carbon.core.clustering.api.CoordinatedActivity;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import javax.cache.CacheInvalidationRequestPropagator;
-import javax.cache.CacheInvalidationRequestSender;
-import javax.cache.event.CacheEntryListener;
-import javax.cache.event.CacheEntryRemovedListener;
-import javax.cache.event.CacheEntryUpdatedListener;
 
 /**
  * Service component for the JMS cache manager.
@@ -48,11 +42,6 @@ import javax.cache.event.CacheEntryUpdatedListener;
 public class JMSManagerServiceComponent {
 
     private static final Log log = LogFactory.getLog(JMSManagerServiceComponent.class);
-    private ServiceRegistration serviceRegistrationForCacheEntry = null;
-    private ServiceRegistration serviceRegistrationForRequestSend = null;
-    private ServiceRegistration serviceRegistrationForCacheRemoval = null;
-    private ServiceRegistration serviceRegistrationForCacheUpdate = null;
-    private ServiceRegistration serviceRegistrationForCachePropagation = null;
     private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Activate
@@ -73,22 +62,6 @@ public class JMSManagerServiceComponent {
         JMSProducer.getInstance().shutdownExecutorService();
         JMSConsumer.getInstance().closeResources();
 
-        // Unregistering the listener service.
-        if (serviceRegistrationForCacheEntry != null) {
-            serviceRegistrationForCacheEntry.unregister();
-        }
-        if (serviceRegistrationForRequestSend != null) {
-            serviceRegistrationForRequestSend.unregister();
-        }
-        if (serviceRegistrationForCacheRemoval != null) {
-            serviceRegistrationForCacheRemoval.unregister();
-        }
-        if (serviceRegistrationForCacheUpdate != null) {
-            serviceRegistrationForCacheUpdate.unregister();
-        }
-        if (serviceRegistrationForCachePropagation != null) {
-            serviceRegistrationForCachePropagation.unregister();
-        }
         if (log.isDebugEnabled()) {
             log.debug("Cache Sync JMS Manager Service bundle is deactivated.");
         }
@@ -111,19 +84,13 @@ public class JMSManagerServiceComponent {
 
     private void startClient(ComponentContext context) {
 
-        JMSProducer producer = JMSProducer.getInstance();
-        serviceRegistrationForCacheEntry = context.getBundleContext().registerService(
-                CacheEntryListener.class.getName(), producer, null);
-        serviceRegistrationForRequestSend = context.getBundleContext().registerService(
-                CacheInvalidationRequestSender.class.getName(), producer, null);
-        serviceRegistrationForCacheRemoval = context.getBundleContext().registerService(
-                CacheEntryRemovedListener.class.getName(), producer, null);
-        serviceRegistrationForCacheUpdate = context.getBundleContext().registerService(
-                CacheEntryUpdatedListener.class.getName(), producer, null);
-        serviceRegistrationForCachePropagation = context.getBundleContext().registerService(
-                CacheInvalidationRequestPropagator.class.getName(), new CrossClusterMessageDispatcher(), null);
-        producer.startService();
-        JMSConsumer.getInstance().startService();
-        log.info("Cache Sync JMS Manager Service bundle activated successfully.");
+         // If hybrid mode is enabled start the listener for coordinator or star the JMS service.
+         if (JMSUtils.getRunInHybridModeProperty()) {
+             HybridModeCoordinatorListener coordinatorListener = HybridModeCoordinatorListener.getInstance(context);
+             context.getBundleContext().registerService(CoordinatedActivity.class.getName(), coordinatorListener, null);
+             log.info("Cache Sync JMS Manager Service Hybrid Mode Listener activated successfully.");
+         } else {
+             JMSUtils.startOSGIService(context);
+         }
     }
 }
