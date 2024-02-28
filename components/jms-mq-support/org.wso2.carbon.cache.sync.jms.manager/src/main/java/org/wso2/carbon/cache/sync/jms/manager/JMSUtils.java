@@ -248,7 +248,7 @@ public class JMSUtils {
      */
     public static Boolean isDurableSubscriber() {
 
-        return getConfiguredBooleanValue.apply(MB_IS_DURABLE_PROP_VALUE, true);
+        return getConfiguredBooleanValue.apply(MB_IS_DURABLE_PROP_VALUE, false);
     }
 
     /**
