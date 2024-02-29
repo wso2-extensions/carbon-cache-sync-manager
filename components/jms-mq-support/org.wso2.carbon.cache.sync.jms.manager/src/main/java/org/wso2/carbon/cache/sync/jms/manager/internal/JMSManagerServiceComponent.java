@@ -84,8 +84,8 @@ public class JMSManagerServiceComponent {
 
     private void startClient(ComponentContext context) {
 
-         // If hybrid mode is enabled start the listener for coordinator or star the JMS service.
-         if (JMSUtils.getRunInHybridModeProperty()) {
+        // Start the listener for coordinator if hybrid mode is enabled; otherwise, start the JMS service directly.
+        if (JMSUtils.getRunInHybridModeProperty()) {
              HybridModeCoordinatorListener coordinatorListener = HybridModeCoordinatorListener.getInstance(context);
              context.getBundleContext().registerService(CoordinatedActivity.class.getName(), coordinatorListener, null);
              log.info("Cache Sync JMS Manager Service Hybrid Mode Listener activated successfully.");

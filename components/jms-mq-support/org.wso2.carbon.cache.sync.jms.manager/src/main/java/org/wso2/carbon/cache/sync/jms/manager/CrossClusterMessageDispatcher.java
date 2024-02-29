@@ -34,7 +34,7 @@ public class CrossClusterMessageDispatcher implements CacheInvalidationRequestPr
     public void propagate(ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
 
         if (!JMSUtils.isMBCacheInvalidatorEnabled()) {
-            log.debug("MB based cache invalidation is not enabled");
+            log.debug("MB based cache invalidation is not enabled.");
             return;
         }
 
