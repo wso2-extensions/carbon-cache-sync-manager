@@ -22,6 +22,7 @@ import org.apache.axiom.om.OMElement;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.identity.base.IdentityConstants;
 import org.wso2.carbon.identity.core.util.IdentityConfigParser;
 import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
@@ -37,6 +38,11 @@ import java.util.Properties;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
+import javax.cache.CacheInvalidationRequestPropagator;
+import javax.cache.CacheInvalidationRequestSender;
+import javax.cache.event.CacheEntryListener;
+import javax.cache.event.CacheEntryRemovedListener;
+import javax.cache.event.CacheEntryUpdatedListener;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -64,6 +70,7 @@ public class JMSUtils {
     public static final String JNDI_TOPIC_PROP_NAME_VALUE = "CacheInvalidator.MB.TopicName";
     public static final String MB_USERNAME_PROP_VALUE = "CacheInvalidator.MB.Username";
     public static final String MB_PASSWORD_PROP_VALUE = "CacheInvalidator.MB.Password";
+    public static final String MB_IS_DURABLE_PROP_VALUE = "CacheInvalidator.MB.IsDurableSubscriber";
     // Cache name prefix of local cache.
     public static final String LOCAL_CACHE_PREFIX = "$__local__$.";
     // Cache name prefix of clear all.
@@ -77,6 +84,8 @@ public class JMSUtils {
     public static final String LOOKUP_TOPIC = "exampleTopic";
     public static final String CACHE_INVALIDATOR_ELEMENT = "CacheInvalidator";
     public static final String CACHE_MANAGER_ELEMENT = "CacheManager";
+    public static final String DURABLE_CON_CLIENT_ID_PREFIX = "is-client-id-";
+    public static final String DURABLE_SUB_NAME_PREFIX = "is-subscriber-name-";
 
     private static Map<String, List<String>> mbCacheListConfigurationHolder;
 
@@ -230,6 +239,35 @@ public class JMSUtils {
             }
         }
         return true;
+    }
+
+    /**
+     * Checks if the Durable subscriber is enabled.
+     *
+     * @return Boolean representing the enabled state, or false if the property is not set.
+     */
+    public static Boolean isDurableSubscriber() {
+
+        return getConfiguredBooleanValue.apply(MB_IS_DURABLE_PROP_VALUE, false);
+    }
+
+    /**
+     * Start the JMS manager service.
+     *
+     * @param context Component Context.
+     */
+    public static void startOSGIService(ComponentContext context) {
+
+        JMSProducer producer = JMSProducer.getInstance();
+        context.getBundleContext().registerService(CacheEntryListener.class.getName(), producer, null);
+        context.getBundleContext().registerService(CacheInvalidationRequestSender.class.getName(), producer, null);
+        context.getBundleContext().registerService(CacheEntryRemovedListener.class.getName(), producer, null);
+        context.getBundleContext().registerService(CacheEntryUpdatedListener.class.getName(), producer, null);
+        context.getBundleContext().registerService(CacheInvalidationRequestPropagator.class.getName(),
+                new CrossClusterMessageDispatcher(), null);
+        producer.startService();
+        JMSConsumer.getInstance().startService();
+        log.info("Cache Sync JMS Manager Service bundle activated successfully.");
     }
 
     private static Map<String, List<String>> getMessageBrokerCacheList() {
