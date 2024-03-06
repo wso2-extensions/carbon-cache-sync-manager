@@ -36,6 +36,14 @@ To get started with the connector, you can follow the below docs based on the Me
     1. Setup IS for IBM MQ: [Refer](resources/ibm-mq-resources/IBMMQ_README.md)
     2. Deploy IBM MQ Message Broker: [Refer](resources/ibm-mq-resources/IBMMQ_MB_DEPLOYMENT.md)
 
+  
+### Performance Analysis
+
+We have done an analysis on the impact of this connector for the overall performance of the IS deployments. Based on 
+the test results, it can be concluded that there is no significant impact to the performance.
+
+Refer [Performance Analysis](resources/common-resources/PERFORMANCE_ANALYSIS.md) for more details on the performance 
+tests and the results.
 
 ### Performance Improvement
 
