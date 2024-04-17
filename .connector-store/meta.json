@@ -6,5 +6,12 @@
     "description": "This connector supports cache invalidation message exchange across multi-cluster deployments, which enables the deployment of Identity Server (IS) in Active-Active mode. It establishes connections between IS servers and a designated Message broker (to be deployed independently) through a topic using a publish/subscribe (pub/sub) mechanism.",
     "status": "Active",
     "labels": [],
-    "releases": []
+    "releases": [
+        {
+            "tagName": "2.0.13",
+            "products": [
+                "IS 5.11.0"
+            ]
+        }
+    ]
 }
