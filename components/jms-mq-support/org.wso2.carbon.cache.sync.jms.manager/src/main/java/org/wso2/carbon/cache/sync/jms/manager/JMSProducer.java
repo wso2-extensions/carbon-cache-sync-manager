@@ -171,9 +171,12 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
     }
 
     @SuppressFBWarnings
-    private void sendInvalidationMessage(ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
+    void sendInvalidationMessage(ClusterCacheInvalidationRequest clusterCacheInvalidationRequest) {
 
         try {
+            if (!isSessionValid(session)) {
+                retryConnection();
+            }
             TextMessage message = session.createTextMessage(clusterCacheInvalidationRequest.toString());
             if (StringUtils.isNotBlank(JMSUtils.getProducerName())) {
                 message.setStringProperty(JMSUtils.SENDER, JMSUtils.getProducerName());
@@ -241,7 +244,7 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
         }
     }
 
-    private void startConnection() throws JMSException, NamingException {
+    void startConnection() throws JMSException, NamingException {
 
         this.connection = JMSUtils.createConnection(connectionFactory);;
         this.connection.start();
@@ -260,6 +263,16 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
             } catch (JMSException | NamingException e) {
                 retryCount++;
             }
+        }
+    }
+
+    private boolean isSessionValid(Session session) {
+        try {
+            session.getTransacted();
+            return true;
+        } catch (JMSException e) {
+            log.debug("JMS session is expired or invalid.");
+            return false;
         }
     }
 }

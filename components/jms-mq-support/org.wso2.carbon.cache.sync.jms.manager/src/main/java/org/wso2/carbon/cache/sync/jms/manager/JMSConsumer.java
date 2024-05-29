@@ -55,13 +55,15 @@ public class JMSConsumer {
 
     private final ConnectionFactory connectionFactory;
     private final InitialContext initialContext;
-    private Session session;
     private Topic topic;
-    private Connection connection;
-    private MessageConsumer consumer;
+
+    Session session;
+    Connection connection;
+    MessageConsumer consumer;
+
     private static volatile JMSConsumer instance;
 
-    private JMSConsumer() {
+    JMSConsumer() {
 
         try {
             this.initialContext = JMSUtils.createInitialContext();
@@ -193,7 +195,7 @@ public class JMSConsumer {
         }
     }
 
-    private void startConnection() throws JMSException, NamingException {
+    void startConnection() throws JMSException, NamingException {
 
         this.connection = JMSUtils.createConnection(connectionFactory);
         boolean isDurableSubscription = JMSUtils.isDurableSubscriber();
