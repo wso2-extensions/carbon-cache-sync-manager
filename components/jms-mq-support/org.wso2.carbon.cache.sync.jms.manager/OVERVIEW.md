@@ -48,3 +48,7 @@ tests and the results.
 ### Performance Improvement
 
 We can improve the performance of Message Brokers by reducing the cache invalidation messages that needs to be send across. Ideally we don't need sync clusters for all the flows. Refer [Performance Improvement](resources/common-resources/PERFORMANCE_IMPROVEMENT.md) for more details.
+
+### Periodic CleanUp
+
+We can further enhance our cache management strategy by implementing a periodic cleanup mechanism for the local cache on each node. Refer [Periodic CleanUp](resources/common-resources/PERIODIC_CLEANUP.md) for more details.
