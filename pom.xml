@@ -111,6 +111,18 @@
                 <artifactId>javax.cache.wso2</artifactId>
                 <version>${javax.cache.wso2.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit-jupiter-api.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -294,13 +306,17 @@
         <commons-logging.osgi.version.range>[1.2,2.0)</commons-logging.osgi.version.range>
         <osgi.framework.imp.pkg.version.range>[1.9.0, 2.0.0)</osgi.framework.imp.pkg.version.range>
         <osgi.service.component.imp.pkg.version.range>[1.2.0, 2.0.0)</osgi.service.component.imp.pkg.version.range>
-        <carbon.identity.framework.imp.pkg.version.range>[5.17.5, 6.0.0)
+        <carbon.identity.framework.imp.pkg.version.range>[5.17.5, 7.5.0)
         </carbon.identity.framework.imp.pkg.version.range>
         <commons-collections.wso2.osgi.version.range>[3.2.0,4.0.0)</commons-collections.wso2.osgi.version.range>
         <org.wso2.carbon.user.core.version.range>[4.0.0,5.0.0)</org.wso2.carbon.user.core.version.range>
         <javax.cache.imp.range>[1.0,2)</javax.cache.imp.range>
         <javax.jms.imp.range>[2.0,3)</javax.jms.imp.range>
         <carbon.kernel.imp.pkg.version.range>[4.6.0, 5.0.0)</carbon.kernel.imp.pkg.version.range>
+
+        <!--Test-->
+        <mockito.version>5.3.1</mockito.version>
+        <junit-jupiter-api.version>5.7.1</junit-jupiter-api.version>
     </properties>
 
 </project>
