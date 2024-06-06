@@ -1,6 +1,6 @@
 ### Introduction
 
-This repository contains the connector which supports cache invalidation message exchange across multi-cluster deployments, which enables the deployment of Identity Server (IS) in Active-Active mode. It establishes connections between IS servers and a designated Central broker (to be deployed independently) through a topic using a publish/subscribe (pub/sub) mechanism.
+This repository contains the connector that supports cache invalidation message exchange across multi-cluster deployments, enabling the deployment of Identity Server (IS) in Active-Active mode. It establishes connections between IS servers and a designated central broker (to be deployed independently) through a topic using a publish/subscribe (pub/sub) mechanism.
 
 ### Why is it mandatory to use this connector?
 
