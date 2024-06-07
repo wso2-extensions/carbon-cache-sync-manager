@@ -15,15 +15,19 @@ Below we listed the caches that can be exempted from synchronization across clus
      - **AuthenticationContextCache**
        - Until the authentication request is successfully completed, all authentication information is stored in the AuthenticationContextCache object, which needs to be shared across all nodes in the cluster. Once the user is authenticated successfully, this object will be removed from the cache, and the required information will be stored in the SessionContext cache.
      - **AuthenticationResultCache**
-       - Holds the authentication result that contains the authenticated user details, claim mappings, and other authentication specific results, and stores this information in the cache. Once the user gets authenticated through the authentication framework, it stores this object in the cache and reads the response from the inbound protocol handler once the response is built.
-
+       - The AuthenticationResultCache object holds the authentication result that contains the authenticated user details, claim mappings and other authentication specific results, and stores this information in the cache. Once the user gets authenticated through the authentication framework, it stores this object in the cache and reads the response from the inbound protocol handler once the response is built.
+     - **AuthenticationRequestCache**
+       - The AuthenticationRequestCache object holds all the required details from the authentication request until the authentication flow is completed by the authentication framework. Note that this is not from the inbound protocol validator level. The Authentication Framework wraps the information to the AuthenticationRequestCache object and stores it in the cache.
+     - **AuthenticationErrorCache**
+       - Another temporary cache object that holds all the error details from the authentication request until the authentication flow is complete. 
+   
    **Note:** This is based on the premise that a single data cluster will oversee the entire authentication flow i.e. while authentication is happening subsequent requests won't jumble between different data clusters for different authentication steps in multi-step authentication.
   
    **Configuration** 
    ```yaml
    [[cache_invalidator.sync_block_list.cache_manager]]
     name="IdentityApplicationManagementCacheManager"
-    list=["OAuthSessionDataCache","AuthenticationContextCache","AuthenticationResultCache"]
+    list=["OAuthSessionDataCache","AuthenticationContextCache","AuthenticationResultCache", "AuthenticationRequestCache", "AuthenticationErrorCache"]
    ```
    
 ### How to configure

@@ -6,7 +6,7 @@ to a third-party message broker, we performed several performance test rounds.
 This is the base deployment for performance tests where there are two clusters each having two nodes of Identity 
 Server. All the IS nodes are connected to a shared database.
 
-![perf_test_deployment.png](./perf_test_deployment.png)
+![perf_test_deployment.png](perf_test_deployment.png)
 
 ### Test Scenario 1: Single Cluster Deployment
 
@@ -20,7 +20,7 @@ Setup 2: One cluster serving the traffic, the connector is enabled and connected
 
 Setup 3: One cluster serving the traffic, the connector is enabled and connected with IBM MQ
 
-![perf_test_round1.png](./perf_test_round1_setup.png)
+![perf_test_round1.png](perf_test_round1_setup.png)
 
 Here are the test results,
 
@@ -84,7 +84,7 @@ Setup 2: Both clusters serving the traffic, the connector is enabled and connect
 
 Setup 3: Both clusters serving the traffic, the connector is enabled and connected with IBM MQ
 
-![perf_test_round2_setup.png](./perf_test_round2_setup.png)
+![perf_test_round2_setup.png](perf_test_round2_setup.png)
 
 **Setup 1: Without the cache invalidation message broker connector**
 
