@@ -1,0 +1,47 @@
+{
+    "name": "JMS Cache Sync Manager",
+    "owner": "WSO2",
+    "category": "Cache Sync",
+    "documentationUrl": "https://github.com/wso2-extensions/carbon-cache-sync-manager/blob/main/README.md",
+    "description": "This connector supports cache invalidation message exchange across multi-cluster deployments, which enables the deployment of Identity Server (IS) in Active-Active mode. It establishes connections between IS servers and a designated Message broker (to be deployed independently) through a topic using a publish/subscribe (pub/sub) mechanism.",
+    "status": "Active",
+    "labels": [],
+    "releases": [
+        {
+            "tagName": "2.1.0",
+            "products": [
+                "IS 7.0.0"
+            ]
+        },
+        {
+            "tagName": "2.0.13",
+            "products": [
+                "IS 5.11.0"
+            ]
+        },
+        {
+            "tagName": "2.0.5",
+            "products": [
+                "IS 5.11.0"
+            ]
+        },
+        {
+            "tagName": "2.0.0",
+            "products": [
+                "IS 5.11.0"
+            ]
+        },
+        {
+            "tagName": "1.0.6",
+            "products": [
+                "IS 5.11.0"
+            ]
+        },
+        {
+            "tagName": "1.0.4",
+            "products": [
+                "IS 5.11.0"
+            ]
+        }
+    ]
+}
