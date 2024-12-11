@@ -17,12 +17,12 @@
  */
 package org.wso2.carbon.cache.sync.jms.manager;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -49,7 +49,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-class JMSProducerTest {
+public class JMSProducerTest {
 
     private JMSProducer jmsProducer;
     private ExecutorService executorService;
@@ -71,8 +71,8 @@ class JMSProducerTest {
 
     private MockedStatic<JMSUtils> mockedJMSUtils;
 
-    @BeforeEach
-    void setUp() throws NamingException, JMSException, IOException {
+    @BeforeMethod
+    public void setUp() throws NamingException, JMSException, IOException {
 
         MockitoAnnotations.initMocks(this);
         mockedJMSUtils = mockStatic(JMSUtils.class);
@@ -86,8 +86,8 @@ class JMSProducerTest {
         executorService = Executors.newFixedThreadPool(15);
     }
 
-    @AfterEach
-    void tearDown() {
+    @AfterMethod
+    public void tearDown() {
 
         executorService.shutdown();
         jmsProducer.shutdownExecutorService();
@@ -97,7 +97,7 @@ class JMSProducerTest {
     }
 
     @Test
-    void testStartServiceWhenCacheInvalidationIsDisabled() throws JMSException, NamingException {
+    public void testStartServiceWhenCacheInvalidationIsDisabled() throws JMSException, NamingException {
 
         mockedJMSUtils.when(JMSUtils::isMBCacheInvalidatorEnabled).thenReturn(false);
         jmsProducer.startService();
@@ -105,21 +105,19 @@ class JMSProducerTest {
     }
 
     @Test
-    void testSendWhenCacheInvalidationIsDisabled() throws JMSException {
+    public void testSendWhenCacheInvalidationIsDisabled() throws JMSException {
 
         mockedJMSUtils.when(JMSUtils::isMBCacheInvalidatorEnabled).thenReturn(false);
         jmsProducer.send(createCacheEntryInfo());
         verify(producer, never()).send(any(Message.class));
     }
 
-
     @Test
-    void testEntryCreated() throws CacheEntryListenerException {
+    public void testEntryCreated() throws CacheEntryListenerException {
 
         jmsProducer.entryCreated(cacheEntryEvent);
         verifyNoInteractions(producer);
     }
-
 
     private CacheEntryInfo createCacheEntryInfo() {
 
