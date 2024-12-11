@@ -17,12 +17,12 @@
  */
 package org.wso2.carbon.cache.sync.jms.manager;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import org.wso2.carbon.base.CarbonBaseConstants;
 import org.wso2.carbon.caching.impl.CacheImpl;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
@@ -41,7 +41,6 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -51,8 +50,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertSame;
 
-class JMSConsumerTest {
+public class JMSConsumerTest {
 
     @Mock
     private ConnectionFactory connectionFactory;
@@ -70,8 +70,8 @@ class JMSConsumerTest {
     private MockedStatic<JMSUtils> mockedJMSUtils;
     private JMSConsumer jmsConsumer;
 
-    @BeforeEach
-    void setUp() throws Exception {
+    @BeforeMethod
+    public void setUp() throws Exception {
 
         MockitoAnnotations.initMocks(this);
         mockedJMSUtils = mockStatic(JMSUtils.class);
@@ -92,7 +92,7 @@ class JMSConsumerTest {
     }
 
     @Test
-    void testGetInstance() {
+    public void testGetInstance() {
 
         JMSConsumer instance1 = JMSConsumer.getInstance();
         JMSConsumer instance2 = JMSConsumer.getInstance();
@@ -100,7 +100,7 @@ class JMSConsumerTest {
     }
 
     @Test
-    void testStartServiceWhenCacheInvalidationIsDisabled() throws JMSException, NamingException {
+    public void testStartServiceWhenCacheInvalidationIsDisabled() throws JMSException, NamingException {
 
         mockedJMSUtils.when(JMSUtils::isMBCacheInvalidatorEnabled).thenReturn(false);
         jmsConsumer.startService();
@@ -110,7 +110,7 @@ class JMSConsumerTest {
     }
 
     @Test
-    void testInvalidateCache() {
+    public void testInvalidateCache() {
 
         String message = "ClusterCacheInvalidationRequest{tenantId=1, tenantDomain='example.com', messageId=123, " +
                 "cacheManager=myCacheManager, cache=myCache, cacheKey=myKey}";
@@ -141,8 +141,8 @@ class JMSConsumerTest {
         }
     }
 
-    @AfterEach
-    void tearDown() {
+    @AfterMethod
+    public void tearDown() {
 
         jmsConsumer.closeResources();
         // Close static mocks
@@ -151,12 +151,12 @@ class JMSConsumerTest {
         }
     }
 
-    void initPrivilegedCarbonContext() {
+    private void initPrivilegedCarbonContext() {
 
         System.setProperty(
                 CarbonBaseConstants.CARBON_HOME,
                 Paths.get(System.getProperty("user.dir"), "src", "test", "resources").toString()
-                          );
+        );
         PrivilegedCarbonContext.startTenantFlow();
     }
 }
