@@ -133,6 +133,16 @@
                 <scope>test</scope>
                 <version>${testng.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${com.fasterxml.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson-databind.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -313,10 +323,12 @@
         <log4j-api.version>2.14.1</log4j-api.version>
         <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
         <commons-lang.version>2.6.0.wso2v1</commons-lang.version>
-        <javax.cache.wso2.version>4.9.24</javax.cache.wso2.version>
+        <javax.cache.wso2.version>4.9.26</javax.cache.wso2.version>
         <javax.jms-api.version>2.0.1</javax.jms-api.version>
         <amqp-client.version>5.15.0</amqp-client.version>
         <rabbitmq-jms.version>2.2.0</rabbitmq-jms.version>
+        <com.fasterxml.jackson.version>2.13.2</com.fasterxml.jackson.version>
+        <jackson-databind.version>2.13.2.1</jackson-databind.version>
 
         <!--Maven Plugin Version-->
         <maven.scr.plugin.version>1.22.0</maven.scr.plugin.version>
