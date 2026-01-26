@@ -323,7 +323,7 @@
         <log4j-api.version>2.14.1</log4j-api.version>
         <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
         <commons-lang.version>2.6.0.wso2v1</commons-lang.version>
-        <javax.cache.wso2.version>4.9.26</javax.cache.wso2.version>
+        <javax.cache.wso2.version>4.9.24</javax.cache.wso2.version>
         <javax.jms-api.version>2.0.1</javax.jms-api.version>
         <amqp-client.version>5.15.0</amqp-client.version>
         <rabbitmq-jms.version>2.2.0</rabbitmq-jms.version>
