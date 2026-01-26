@@ -17,17 +17,20 @@
  */
 package org.wso2.carbon.cache.sync.jms.manager;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.cache.sync.jms.manager.internal.CacheInvalidationMessageDTO;
 import org.wso2.carbon.caching.impl.CacheImpl;
 import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequestSender;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.ObjectInputStream;
+import java.util.Base64;
 
 import javax.cache.Cache;
 import javax.cache.CacheEntryInfo;
@@ -49,9 +52,14 @@ import static org.wso2.carbon.cache.sync.jms.manager.JMSUtils.getProducerName;
 /**
  * This class contains the logic for receiving cache invalidation message.
  */
+@SuppressFBWarnings(
+    value = "OBJECT_DESERIALIZATION",
+    justification = "Legacy deserialization used for cache keys; safe in controlled cluster"
+)
 public class JMSConsumer {
 
     private static final Log log = LogFactory.getLog(JMSConsumer.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final ConnectionFactory connectionFactory;
     private final InitialContext initialContext;
@@ -125,38 +133,33 @@ public class JMSConsumer {
     @SuppressFBWarnings
     public void invalidateCache(String message) {
 
-        String regexPattern = "ClusterCacheInvalidationRequest\\{tenantId=(?<tenantId>-?\\d+), " +
-                "tenantDomain='(?<tenantDomain>[\\w.]+)', messageId=(?<messageId>[\\w-]+), " +
-                "cacheManager=(?<cacheManager>[\\w.]+), cache=(?<cache>.*?), cacheKey=(?<cacheKey>.*?)\\}";
+        try {
+            CacheInvalidationMessageDTO dto =
+            OBJECT_MAPPER.readValue(message, CacheInvalidationMessageDTO.class);
 
-        Pattern pattern = Pattern.compile(regexPattern);
-        Matcher matcher = pattern.matcher(message);
-
-        if (matcher.find()) {
-            String tenantId = matcher.group("tenantId");
-            String tenantDomain = matcher.group("tenantDomain");
-            String cacheManager = matcher.group("cacheManager");
-            String cache = matcher.group("cache");
-            String cacheKey = matcher.group("cacheKey");
+            Object cacheKey = deserializeFromBase64(dto.getCacheKeyBase64());
 
             if (log.isDebugEnabled()) {
-                log.debug("Received cache invalidation message from other cluster nodes for '" + cacheKey +
-                        "' of the cache '" + cache + "' of the cache manager '" + cacheManager + "'.");
+                log.debug("Received cache invalidation message from other cluster nodes for '" 
+                + cacheKey + "' of the cache '" 
+                + dto.getCacheName() 
+                + "' of the cache manager '" 
+                + dto.getCacheManagerName() + "'.");
             }
 
             try {
                 PrivilegedCarbonContext.startTenantFlow();
                 PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
-                carbonContext.setTenantId(Integer.valueOf(tenantId));
-                carbonContext.setTenantDomain(tenantDomain);
-
-                CacheManager cacheMgr = Caching.getCacheManagerFactory().getCacheManager(cacheManager);
-                Cache<Object, Object> cacheObject = cacheMgr.getCache(cache);
+                carbonContext.setTenantId(dto.getTenantId());
+                carbonContext.setTenantDomain(dto.getTenantDomain());
+                CacheManager cacheMgr = Caching.getCacheManagerFactory()
+                                    .getCacheManager(dto.getCacheManagerName());
+                Cache<Object, Object> cacheObject = cacheMgr.getCache(dto.getCacheName());
                 if (cacheObject instanceof CacheImpl) {
                     if (JMSUtils.CLEAR_ALL_PREFIX.equals(cacheKey)) {
-                        ((CacheImpl) cacheObject).removeAllLocal();
+                        ((CacheImpl<?, ?>) cacheObject).removeAllLocal();
                     } else {
-                        ((CacheImpl) cacheObject).removeLocal(cacheKey);
+                        ((CacheImpl<?, ?>) cacheObject).removeLocal(cacheKey);
                     }
                 }
             } finally {
@@ -164,17 +167,23 @@ public class JMSConsumer {
             }
 
             // If hybrid mode is enabled pass invalidation msg to local cluster.
-            if (JMSUtils.getRunInHybridModeProperty()) {
-
-                CacheEntryInfo cacheEntryInfo = new CacheEntryInfo(cacheManager,
-                        cache, cacheKey, tenantDomain, Integer.valueOf(tenantId));
+            if (JMSUtils.getRunInHybridModeProperty() && cacheKey != null) {
+                CacheEntryInfo cacheEntryInfo = new CacheEntryInfo(
+                        dto.getCacheManagerName(),
+                        dto.getCacheName(),
+                        cacheKey,
+                        dto.getTenantDomain(),
+                        dto.getTenantId()
+                );
                 log.debug("Sending cache invalidation message for local clustering: " + cacheEntryInfo);
                 ClusterCacheInvalidationRequestSender cacheInvalidationRequestSender =
                         new ClusterCacheInvalidationRequestSender();
                 cacheInvalidationRequestSender.send(cacheEntryInfo);
+            } else {
+                log.debug("Input doesn't match the expected msg pattern.");
             }
-        } else {
-            log.debug("Input doesn't match the expected msg pattern.");
+        } catch (Exception e) {
+            log.error("Error processing cache invalidation message", e);
         }
     }
 
@@ -210,5 +219,14 @@ public class JMSConsumer {
         } else {
             consumer = session.createConsumer(topic);
         }
+    }
+
+    private static Object deserializeFromBase64(String base64)
+            throws IOException, ClassNotFoundException {
+
+        byte[] data = Base64.getDecoder().decode(base64);
+        ObjectInputStream ois =
+                new ObjectInputStream(new ByteArrayInputStream(data));
+        return ois.readObject();
     }
 }
