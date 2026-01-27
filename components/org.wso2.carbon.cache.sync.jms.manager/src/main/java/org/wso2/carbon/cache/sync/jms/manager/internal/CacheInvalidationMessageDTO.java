@@ -30,8 +30,6 @@ package org.wso2.carbon.cache.sync.jms.manager.internal;
  */
 public class CacheInvalidationMessageDTO {
 
-    private String uuid;
-    private long timestamp;
     private String tenantDomain;
     private int tenantId;
 
@@ -40,23 +38,6 @@ public class CacheInvalidationMessageDTO {
     private String cacheKeyBase64;
 
     public CacheInvalidationMessageDTO() {
-    }
-
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
     }
 
     public String getTenantDomain() {

@@ -189,103 +189,12 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
             // subclass fields to Jackson; building our own DTO avoids missing values.
             CacheInvalidationMessageDTO dto = new CacheInvalidationMessageDTO();
 
-            try {
-                java.lang.reflect.Method m = clusterCacheInvalidationRequest.getClass().getMethod("getUuid");
-                Object uuid = m.invoke(clusterCacheInvalidationRequest);
-                if (uuid != null) {
-                    dto.setUuid(uuid.toString());
-                }
-            } catch (Exception ignored) {
-            }
-
-            try {
-                java.lang.reflect.Method m = clusterCacheInvalidationRequest.getClass().getMethod("getTimestamp");
-                Object ts = m.invoke(clusterCacheInvalidationRequest);
-                if (ts instanceof Number) {
-                    dto.setTimestamp(((Number) ts).longValue());
-                }
-            } catch (Exception ignored) {
-            }
-
-            try {
-                java.lang.reflect.Method m = clusterCacheInvalidationRequest.getClass().getMethod("getTenantDomain");
-                Object td = m.invoke(clusterCacheInvalidationRequest);
-                if (td != null) {
-                    dto.setTenantDomain(td.toString());
-                }
-            } catch (Exception ignored) {
-            }
-
-            try {
-                java.lang.reflect.Method m = clusterCacheInvalidationRequest.getClass().getMethod("getTenantId");
-                Object tid = m.invoke(clusterCacheInvalidationRequest);
-                if (tid instanceof Number) {
-                    dto.setTenantId(((Number) tid).intValue());
-                }
-            } catch (Exception ignored) {
-            }
-
-            // Try to extract cache info either from a nested CacheInfo object or
-            // from direct getters on the request.
-            try {
-                java.lang.reflect.Method getCacheInfo = clusterCacheInvalidationRequest
-                .getClass()
-                .getMethod("getCacheInfo");
-                Object cacheInfo = getCacheInfo.invoke(clusterCacheInvalidationRequest);
-                if (cacheInfo != null) {
-                    try {
-                        java.lang.reflect.Method gm = cacheInfo.getClass().getMethod("getCacheManagerName");
-                        Object cmn = gm.invoke(cacheInfo);
-                        if (cmn != null) {
-                            dto.setCacheManagerName(cmn.toString());
-                        }
-                    } catch (Exception ignored) {
-                    }
-                    try {
-                        java.lang.reflect.Method gn = cacheInfo.getClass().getMethod("getCacheName");
-                        Object cn = gn.invoke(cacheInfo);
-                        if (cn != null) {
-                            dto.setCacheName(cn.toString());
-                        }
-                    } catch (Exception ignored) {
-                    }
-                    try {
-                        java.lang.reflect.Method gk = cacheInfo.getClass().getMethod("getCacheKey");
-                        Object ck = gk.invoke(cacheInfo);
-                        if (ck != null) {
-                            dto.setCacheKeyBase64(serializeToBase64(ck));
-                        }
-                    } catch (Exception ignored) {
-                    }
-                }
-            } catch (Exception e) {
-                try {
-                    java.lang.reflect.Method gm = clusterCacheInvalidationRequest
-                    .getClass()
-                    .getMethod("getCacheManagerName");
-                    Object cmn = gm.invoke(clusterCacheInvalidationRequest);
-                    if (cmn != null) {
-                        dto.setCacheManagerName(cmn.toString());
-                    }
-                } catch (Exception ignored) {
-                }
-                try {
-                    java.lang.reflect.Method gn = clusterCacheInvalidationRequest.getClass().getMethod("getCacheName");
-                    Object cn = gn.invoke(clusterCacheInvalidationRequest);
-                    if (cn != null) {
-                        dto.setCacheName(cn.toString());
-                    }
-                } catch (Exception ignored) {
-                }
-                try {
-                    java.lang.reflect.Method gk = clusterCacheInvalidationRequest.getClass().getMethod("getCacheKey");
-                    Object ck = gk.invoke(clusterCacheInvalidationRequest);
-                    if (ck != null) {
-                        dto.setCacheKeyBase64(serializeToBase64(ck));
-                    }
-                } catch (Exception ignored) {
-                }
-            }
+            dto.setTenantDomain(clusterCacheInvalidationRequest.getTenantDomain());
+            dto.setTenantId(clusterCacheInvalidationRequest.getTenantId());
+            ClusterCacheInvalidationRequest.CacheInfo cacheInfo = clusterCacheInvalidationRequest.getCacheInfo();
+            dto.setCacheManagerName(cacheInfo.getCacheManagerName());
+            dto.setCacheName(cacheInfo.getCacheName());
+            dto.setCacheKeyBase64(serializeToBase64(cacheInfo.getCacheKey()));
 
             String jsonMessage = OBJECT_MAPPER.writeValueAsString(dto);
             TextMessage message = session.createTextMessage(jsonMessage);
@@ -299,6 +208,8 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
             log.error("Failed to serialize cache invalidation message for cache '"
                     + clusterCacheInvalidationRequest.getCacheInfo().getCacheName() + "' with key '"
                     + clusterCacheInvalidationRequest.getCacheInfo().getCacheKey() + "'.", e);
+        } catch (IOException e) {
+            log.error("" + e);
         }
     }
 
