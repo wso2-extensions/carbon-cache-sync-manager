@@ -315,7 +315,7 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
         }
     }
 
-    private static String serializeToBase64(Object object) throws IOException {
+    protected static String serializeToBase64(Object object) throws IOException {
 
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {

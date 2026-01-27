@@ -222,7 +222,7 @@ public class JMSConsumer {
         }
     }
 
-    private static Object deserializeFromBase64(String base64) throws IOException {
+    protected static Object deserializeFromBase64(String base64) throws IOException {
 
         byte[] data = Base64.getDecoder().decode(base64);
 

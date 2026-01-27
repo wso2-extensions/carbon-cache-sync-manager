@@ -17,6 +17,7 @@
  */
 package org.wso2.carbon.cache.sync.jms.manager;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
@@ -24,9 +25,11 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.carbon.base.CarbonBaseConstants;
+import org.wso2.carbon.cache.sync.jms.manager.internal.CacheInvalidationMessageDTO;
 import org.wso2.carbon.caching.impl.CacheImpl;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 
 import javax.cache.CacheManager;
@@ -110,10 +113,17 @@ public class JMSConsumerTest {
     }
 
     @Test
-    public void testInvalidateCache() {
+    public void testInvalidateCache() throws IOException {
 
-        String message = "ClusterCacheInvalidationRequest{tenantId=1, tenantDomain='example.com', messageId=123, " +
-                "cacheManager=myCacheManager, cache=myCache, cacheKey=myKey}";
+        // Create DTO
+        CacheInvalidationMessageDTO dto = new CacheInvalidationMessageDTO();
+        dto.setTenantId(1);
+        dto.setTenantDomain("example.com");
+        dto.setCacheManagerName("myCacheManager");
+        dto.setCacheName("myCache");
+        dto.setCacheKeyBase64(JMSProducer.serializeToBase64("myKey"));
+
+        String message = new ObjectMapper().writeValueAsString(dto);
 
         try (MockedStatic<PrivilegedCarbonContext> mockedPrivilegedCarbonContext =
                      mockStatic(PrivilegedCarbonContext.class);
