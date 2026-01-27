@@ -29,7 +29,10 @@ import org.wso2.carbon.context.PrivilegedCarbonContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
 import java.util.Base64;
 
 import javax.cache.Cache;
@@ -179,8 +182,6 @@ public class JMSConsumer {
                 ClusterCacheInvalidationRequestSender cacheInvalidationRequestSender =
                         new ClusterCacheInvalidationRequestSender();
                 cacheInvalidationRequestSender.send(cacheEntryInfo);
-            } else {
-                log.debug("Input doesn't match the expected msg pattern.");
             }
         } catch (Exception e) {
             log.error("Error processing cache invalidation message", e);
@@ -221,12 +222,37 @@ public class JMSConsumer {
         }
     }
 
-    private static Object deserializeFromBase64(String base64)
-            throws IOException, ClassNotFoundException {
+    private static Object deserializeFromBase64(String base64) throws IOException {
 
         byte[] data = Base64.getDecoder().decode(base64);
-        ObjectInputStream ois =
-                new ObjectInputStream(new ByteArrayInputStream(data));
-        return ois.readObject();
+
+        // Custom ObjectInputStream to allow only safe classes
+        class SafeObjectInputStream extends ObjectInputStream {
+
+            public SafeObjectInputStream(InputStream in) throws IOException {
+                super(in);
+            }
+
+            @Override
+            protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+
+                String className = desc.getName();
+
+                // Only allow CacheInvalidationMessageDTO and core Java classes
+                if (className.startsWith("org.wso2.carbon.") ||
+                        className.startsWith("java.")) {
+                    return super.resolveClass(desc);
+                }
+
+                throw new InvalidClassException("Unauthorized deserialization attempt", className);
+            }
+        }
+
+        try (ObjectInputStream objectInputStream = new SafeObjectInputStream(new ByteArrayInputStream(data))) {
+            return objectInputStream.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new IOException("Failed to deserialize cache invalidation message", e);
+        }
     }
+
 }

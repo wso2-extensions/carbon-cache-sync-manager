@@ -19,20 +19,20 @@
 package org.wso2.carbon.cache.sync.jms.manager.internal;
 
 /**
- * Data Transfer Object (DTO) representing a cache invalidation message
- * to be sent across clusters via JMS.
+ * Data Transfer Object (DTO) that represents a cache invalidation message
+ * exchanged across cluster nodes via JMS.
  * <p>
- * This class is used to serialize essential information from a
+ * This DTO is used to serialize and transport the essential cache
+ * invalidation details extracted from
  * {@link org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequest}
- * into a stable format, ensuring that all necessary fields are propagated
- * even when subclass fields are not directly exposed.
+ * into a stable and decoupled format. This ensures that all required
+ * information is propagated correctly across the cluster.
  * </p>
  */
 public class CacheInvalidationMessageDTO {
 
     private String tenantDomain;
     private int tenantId;
-
     private String cacheManagerName;
     private String cacheName;
     private String cacheKeyBase64;

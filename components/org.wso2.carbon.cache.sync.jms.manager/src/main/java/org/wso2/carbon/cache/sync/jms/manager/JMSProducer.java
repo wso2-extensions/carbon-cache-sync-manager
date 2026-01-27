@@ -33,6 +33,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Base64;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -194,7 +195,19 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
             ClusterCacheInvalidationRequest.CacheInfo cacheInfo = clusterCacheInvalidationRequest.getCacheInfo();
             dto.setCacheManagerName(cacheInfo.getCacheManagerName());
             dto.setCacheName(cacheInfo.getCacheName());
-            dto.setCacheKeyBase64(serializeToBase64(cacheInfo.getCacheKey()));
+
+            Object cacheKey = cacheInfo.getCacheKey();
+            if (cacheKey instanceof Serializable) {
+                dto.setCacheKeyBase64(serializeToBase64(cacheKey));
+            } else {
+                // Log a clear error if cache key is not serializable
+                // invalidation will be skipped for this key
+                log.error("Cache key is not Serializable. CacheManager: "
+                        + cacheInfo.getCacheManagerName()
+                        + ", Cache: " + cacheInfo.getCacheName()
+                        + ", Key class: " + cacheKey.getClass().getName());
+                dto.setCacheKeyBase64(null);
+            }
 
             String jsonMessage = OBJECT_MAPPER.writeValueAsString(dto);
             TextMessage message = session.createTextMessage(jsonMessage);
@@ -203,13 +216,13 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
             }
             producer.send(message);
         } catch (JMSException e) {
-            log.error("Something went wrong with JMS producer connection." + e);
+            log.error("Something went wrong with JMS producer connection.", e);
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize cache invalidation message for cache '"
                     + clusterCacheInvalidationRequest.getCacheInfo().getCacheName() + "' with key '"
                     + clusterCacheInvalidationRequest.getCacheInfo().getCacheKey() + "'.", e);
         } catch (IOException e) {
-            log.error("" + e);
+            log.error("I/O error occurred while processing cache invalidation message.", e);
         }
     }
 
@@ -302,11 +315,14 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
         }
     }
 
-    private static String serializeToBase64(Object obj) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(obj);
-        oos.flush();
-        return Base64.getEncoder().encodeToString(bos.toByteArray());
+    private static String serializeToBase64(Object object) throws IOException {
+
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
+            objectOutputStream.writeObject(object);
+            objectOutputStream.flush();
+            return Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
+        }
     }
+
 }
