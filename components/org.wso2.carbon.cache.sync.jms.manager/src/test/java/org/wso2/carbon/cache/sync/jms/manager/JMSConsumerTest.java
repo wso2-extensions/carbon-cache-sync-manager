@@ -27,6 +27,7 @@ import org.wso2.carbon.base.CarbonBaseConstants;
 import org.wso2.carbon.caching.impl.CacheImpl;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 
 import javax.cache.CacheManager;
@@ -110,10 +111,15 @@ public class JMSConsumerTest {
     }
 
     @Test
-    public void testInvalidateCache() {
+    public void testInvalidateCache() throws IOException {
 
-        String message = "ClusterCacheInvalidationRequest{tenantId=1, tenantDomain='example.com', messageId=123, " +
-                "cacheManager=myCacheManager, cache=myCache, cacheKey=myKey}";
+        String message = "{"
+            + "\"tenantDomain\":\"example.com\","
+            + "\"tenantId\":1,"
+            + "\"cacheManagerName\":\"myCacheManager\","
+            + "\"cacheName\":\"myCache\","
+            + "\"cacheKeyBase64\":\"rO0ABXQABW15S2V5\""
+            + "}";
 
         try (MockedStatic<PrivilegedCarbonContext> mockedPrivilegedCarbonContext =
                      mockStatic(PrivilegedCarbonContext.class);
