@@ -137,17 +137,13 @@ public class JMSConsumer {
     public void invalidateCache(String message) {
 
         try {
-            CacheInvalidationMessageDTO dto =
-            OBJECT_MAPPER.readValue(message, CacheInvalidationMessageDTO.class);
-
+            CacheInvalidationMessageDTO dto = OBJECT_MAPPER.readValue(message, CacheInvalidationMessageDTO.class);
             Object cacheKey = deserializeFromBase64(dto.getCacheKeyBase64());
 
             if (log.isDebugEnabled()) {
-                log.debug("Received cache invalidation message from other cluster nodes for '" 
-                + cacheKey + "' of the cache '" 
-                + dto.getCacheName() 
-                + "' of the cache manager '" 
-                + dto.getCacheManagerName() + "'.");
+                log.debug("Received cache invalidation message from other cluster nodes for '" + cacheKey +
+                        "' of the cache '" + dto.getCacheName() + "' of the cache manager '" + dto.getCacheManagerName()
+                        + "'.");
             }
 
             try {
@@ -222,11 +218,12 @@ public class JMSConsumer {
         }
     }
 
-    protected static Object deserializeFromBase64(String base64) throws IOException {
+    private static Object deserializeFromBase64(String base64) throws IOException {
 
         byte[] data = Base64.getDecoder().decode(base64);
 
-        // Custom ObjectInputStream to allow only safe classes
+        // Custom ObjectInputStream that enforces a strict allow-list during deserialization to
+        // prevent unsafe or malicious classes from being loaded. This prevents deserialization attacks.
         class SafeObjectInputStream extends ObjectInputStream {
 
             public SafeObjectInputStream(InputStream in) throws IOException {
@@ -239,11 +236,9 @@ public class JMSConsumer {
                 String className = desc.getName();
 
                 // Only allow CacheInvalidationMessageDTO and core Java classes
-                if (className.startsWith("org.wso2.carbon.") ||
-                        className.startsWith("java.")) {
+                if (className.startsWith("org.wso2.carbon.")) {
                     return super.resolveClass(desc);
                 }
-
                 throw new InvalidClassException("Unauthorized deserialization attempt", className);
             }
         }

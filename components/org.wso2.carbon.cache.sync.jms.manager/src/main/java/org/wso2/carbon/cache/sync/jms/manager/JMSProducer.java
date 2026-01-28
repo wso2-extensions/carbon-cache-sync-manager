@@ -202,10 +202,8 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
             } else {
                 // Log a clear error if cache key is not serializable
                 // invalidation will be skipped for this key
-                log.error("Cache key is not Serializable. CacheManager: "
-                        + cacheInfo.getCacheManagerName()
-                        + ", Cache: " + cacheInfo.getCacheName()
-                        + ", Key class: " + cacheKey.getClass().getName());
+                log.error("Cache key is not Serializable. CacheManager: " + cacheInfo.getCacheManagerName() +
+                        ", Cache: " + cacheInfo.getCacheName() + ", Key class: " + cacheKey.getClass().getName());
                 dto.setCacheKeyBase64(null);
             }
 
@@ -315,7 +313,7 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
         }
     }
 
-    protected static String serializeToBase64(Object object) throws IOException {
+    private static String serializeToBase64(Object object) throws IOException {
 
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
