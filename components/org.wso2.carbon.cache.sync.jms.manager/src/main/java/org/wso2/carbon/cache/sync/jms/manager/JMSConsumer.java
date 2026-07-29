@@ -64,6 +64,26 @@ public class JMSConsumer {
     private static final Log log = LogFactory.getLog(JMSConsumer.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    // Class name prefixes permitted during cache-key deserialization. Cache keys are Carbon
+    // classes, but their fields are core Java types (e.g. ClaimCacheKey -> AuthenticatedUser
+    // -> java.util.HashMap).
+    private static final String[] ALLOWED_CLASS_PREFIXES = {"org.wso2.carbon.", "java."};
+
+    // JDK sub-packages that are never part of a legitimate Carbon cache key and that carry
+    // deserialization gadget chains reachable from this sink. Deny takes precedence over allow:
+    //   java.rmi.          -> RemoteObjectInvocationHandler opens an outbound JRMP connection
+    //                         during readObject; the reply is deserialized without this filter.
+    //   java.net.          -> URLDNS: HashMap.readObject -> URL.hashCode -> host resolution.
+    //   java.lang.reflect. -> Proxy admits any allow-listed InvocationHandler as a gadget.
+    //   java.lang.invoke.  -> SerializedLambda.readResolve invokes $deserializeLambda$.
+    //   java.security.     -> SignedObject.getObject deserializes its payload on a new,
+    //                         unfiltered ObjectInputStream, bypassing this filter entirely.
+    // "java." does not match "javax.", so javax.management.*, javax.naming.* etc. stay blocked.
+    // Do not narrow the allow-list without checking Carbon cache key field types.
+    private static final String[] DENIED_CLASS_PREFIXES = {
+            "java.rmi.", "java.net.", "java.lang.reflect.", "java.lang.invoke.", "java.security."
+    };
+
     private final ConnectionFactory connectionFactory;
     private final InitialContext initialContext;
     private Topic topic;
@@ -218,6 +238,29 @@ public class JMSConsumer {
         }
     }
 
+    /**
+     * Decides whether a class named in an incoming serialized cache key may be resolved.
+     * A denied prefix always wins over an allowed prefix; anything not explicitly allowed is
+     * rejected (default-deny).
+     *
+     * @param className fully qualified class name from the serialized stream.
+     * @return {@code true} if the class is permitted for deserialization, {@code false} otherwise.
+     */
+    private static boolean isAllowedForDeserialization(String className) {
+
+        for (String deniedPrefix : DENIED_CLASS_PREFIXES) {
+            if (className.startsWith(deniedPrefix)) {
+                return false;
+            }
+        }
+        for (String allowedPrefix : ALLOWED_CLASS_PREFIXES) {
+            if (className.startsWith(allowedPrefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static Object deserializeFromBase64(String base64) throws IOException {
 
         byte[] data = Base64.getDecoder().decode(base64);
@@ -234,9 +277,7 @@ public class JMSConsumer {
             protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
 
                 String className = desc.getName();
-
-                // Only allow CacheInvalidationMessageDTO and core Java classes
-                if (className.startsWith("org.wso2.carbon.")) {
+                if (isAllowedForDeserialization(className)) {
                     return super.resolveClass(desc);
                 }
                 throw new InvalidClassException("Unauthorized deserialization attempt", className);
