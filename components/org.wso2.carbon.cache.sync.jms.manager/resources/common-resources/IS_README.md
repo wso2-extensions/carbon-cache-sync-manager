@@ -1,28 +1,13 @@
-### How to Build
-1. Add the `org.wso2.carbon.cache.sync.jms.manager-xx.jar` jar to the `<IS_HOME>/repository/components/dropins` directory.
-   - if you don't have the jar, you can build the project and find it in the `components/jms-mq-support/org.wso2.carbon.cache.sync.jms.manager/target` directory
-2. Add the following identity.xml.j2 template configurations
-```yaml
-  {% if cache_invalidator.mb.enabled is defined %}
-    <CacheInvalidator>
-      <MB>
-        <Enabled>{{cache_invalidator.mb.enabled}}</Enabled>
-        <Type>{{cache_invalidator.mb.broker_type}}</Type>
-        <InitialNamingFactory>{{cache_invalidator.mb.initial_naming_factory}}</InitialNamingFactory>
-        <ProviderURL>{{cache_invalidator.mb.provider_url}}</ProviderURL>
-        <TopicName>{{cache_invalidator.mb.topic_name}}</TopicName>
-        <ProducerName>{{cache_invalidator.mb.producer_name}}</ProducerName>
-        <Username>{{cache_invalidator.mb.username}}</Username>
-        <Password>{{cache_invalidator.mb.password}}</Password>
-        <HybridMode>{{cache_invalidator.mb.hybrid_mode_enabled}}</HybridMode>
-      </MB>
-    </CacheInvalidator>
-  {% endif %}
-```
-**Note:** For latest **IS 5.11.0** this should have been already added. 
+### Configure WSO2 Identity Server
 
-3. Then add the following config(update it with your values) in the `deployment.toml` file
-```yaml
+1. Add the following jars to the `<IS_HOME>/repository/components/dropins` directory.
+   - `org.wso2.carbon.cache.sync.jms.manager-<version>.jar`
+   - `jms-api-2.0.1.wso2v1.jar`
+
+   Both jars are available in the release artifacts of the [connector releases](https://github.com/wso2-extensions/carbon-cache-sync-manager/releases). Alternatively, build the project and find the connector jar in the `components/org.wso2.carbon.cache.sync.jms.manager/target` directory.
+
+2. Add the following configuration (update it with your values) to the `deployment.toml` file.
+```toml
 [cache_invalidator.mb]
 enabled="true"
 broker_type="jms"
@@ -34,19 +19,22 @@ hybrid_mode_enabled="true"
 username="guest"
 password="guest"
 ```
-#### Description:
-- **enabled**: This property is used to enable or disable the cache invalidation feature.
-- **broker_type**: This property is used to specify the broker type. It can be either `jms` (for ActiveMQ & other JMS brokers) or `rabbitmq` (for RabbitMQ).
-- **initial_naming_factory** : This property is used to specify the initial naming factory.
-  - note: this not required for RabbitMQ
-- **provider_url**: This property is used to specify the provider URL.
-- **topic_name**: This property is used to specify the topic name.
-- **producer_name**: (optional property) This should be unique for each IS server. (Facilitates in identifying the server that sent the message.) This is .
-- **hybrid_mode_enabled**: (optional property) This is used to run along with Hazelcast. (If not specified, hybrid mode is disabled by default.)
-  To enabled hybrid mode, you need to add the following config in the `deployment.toml` file
-```yaml
+   #### Description
+   - **enabled**: Enables or disables the cache invalidation feature.
+   - **broker_type**: The broker type. Use `jms` for ActiveMQ and other JMS brokers, or `rabbitmq` for RabbitMQ.
+   - **initial_naming_factory**: The initial naming factory. Not required for RabbitMQ.
+   - **provider_url**: The provider URL of the broker.
+   - **topic_name**: The topic name.
+   - **producer_name**: (optional) A unique name for each IS server, used to identify the server that sent a message.
+   - **hybrid_mode_enabled**: (optional) Runs the connector along with Hazelcast. Hybrid mode is disabled by default. To enable hybrid mode, also add the following configuration to the `deployment.toml` file.
+```toml
 [server.cache]
 propagation_enabled="true"
- ```
-4. Add the `jms-api_2-2.0.1.wso2v1.jar` jar to the `<IS_HOME>/repository/components/dropins` directory.
-  - if you don't have the jar, you can build the project and find it in the `components/jms-api-orbit/2.0.1.wso2v1/target` directory 
+```
+
+3. Apply the [version specific configuration](VERSION_SPECIFIC_CONFIG.md) for your IS version, if any.
+
+4. Complete the broker specific setup ([ActiveMQ](../active-mq-resources/ACTIVEMQ_README.md), [RabbitMQ](RABBITMQ_README.md) or [IBM MQ](../ibm-mq-resources/IBMMQ_README.md)), restart the server, and verify that the following log line is printed.
+```
+INFO {org.wso2.carbon.cache.sync.jms.manager.JMSUtils} - Cache Sync JMS Manager Service bundle activated successfully.
+```

@@ -68,4 +68,3 @@ If you don't have following configs in your `identity.xml.j2` template, you need
      {% endfor %}
 </CacheInvalidator>
 ```
-**Note:** For latest **IS 5.11.0** this should have been already added.

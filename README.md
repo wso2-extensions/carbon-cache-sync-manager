@@ -25,6 +25,7 @@ To get started with the connector, you can follow the below docs based on the Me
 
 - **Common**
   - Common Setup for IS: [Refer](components/org.wso2.carbon.cache.sync.jms.manager/resources/common-resources/IS_README.md)
+  - Version specific configuration for IS: [Refer](components/org.wso2.carbon.cache.sync.jms.manager/resources/common-resources/VERSION_SPECIFIC_CONFIG.md)
 
 - **Connect with ActiveMQ**
   1. Setup IS for ActiveMQ: [Refer](components/org.wso2.carbon.cache.sync.jms.manager/resources/active-mq-resources/ACTIVEMQ_README.md)
