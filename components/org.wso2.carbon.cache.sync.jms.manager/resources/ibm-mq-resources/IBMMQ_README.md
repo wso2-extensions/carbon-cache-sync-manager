@@ -1,8 +1,8 @@
-## Configure the WSO2 IS
+## Configure WSO2 Identity Server for IBM MQ
 
-1. Follow the instructions in the [IS_README.md](../common-resources/IS_README.md)
-2. Then add the following config(update it with your values) in the deployment.toml file
-  ```
+1. Follow the instructions in the [IS_README.md](../common-resources/IS_README.md).
+2. Add the following configuration (update it with your values) to the `deployment.toml` file.
+  ```toml
   [cache_invalidator.mb]
   enabled="true"
   broker_type="jms"
@@ -23,4 +23,4 @@
    * com.ibm.mq.allclient.jar
    * fscontext.jar
    * providerutil.jar
-5. Restart the WSO2 identity server
+4. Restart the server.

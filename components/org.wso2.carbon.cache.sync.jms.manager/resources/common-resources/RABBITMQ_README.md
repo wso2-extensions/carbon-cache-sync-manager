@@ -1,8 +1,9 @@
-### How to Build
-1. Follow the instructions in the [IS_README.md](IS_README.md)
+### Configure WSO2 Identity Server for RabbitMQ
 
-2. Then add the following config(update it with your values) in the `deployment.toml` file
-```yaml
+1. Follow the instructions in the [IS_README.md](IS_README.md).
+
+2. Add the following configuration (update it with your values) to the `deployment.toml` file.
+```toml
 [cache_invalidator.mb]
 enabled="true"
 broker_type="rabbitmq"
