@@ -32,9 +32,18 @@ password="guest"
 propagation_enabled="true"
 ```
 
-3. Apply the [version specific configuration](VERSION_SPECIFIC_CONFIG.md) for your IS version, if any.
+3. Configure the connector as the cache invalidation sender by adding the following to the `deployment.toml` file. If a `[server.cache]` section already exists, add the property to that section.
+```toml
+[server.cache]
+invalidation_impl = "org.wso2.carbon.cache.sync.jms.manager.JMSProducer"
+```
+   The server sends tenant-wide cache clears, and on IS 7.x all cache invalidations, only through the sender named here. Enabling the connector alone does not select it, so without this setting those invalidations never reach the message broker and the other clusters keep serving stale entries until they expire. The connector logs a warning at startup when this setting is missing.
 
-4. Complete the broker specific setup ([ActiveMQ](../active-mq-resources/ACTIVEMQ_README.md), [RabbitMQ](RABBITMQ_README.md) or [IBM MQ](../ibm-mq-resources/IBMMQ_README.md)), restart the server, and verify that the following log line is printed.
+   With this setting the connector forwards the invalidation to the local Hazelcast cluster first and then publishes it to the broker, so invalidation within the cluster does not depend on the broker. Until the connector has activated (it checks for its configuration every 10 seconds after startup; in hybrid mode it activates on the coordinator node once one is elected) the default sender is used.
+
+4. Apply the [version specific configuration](VERSION_SPECIFIC_CONFIG.md) for your IS version, if any.
+
+5. Complete the broker specific setup ([ActiveMQ](../active-mq-resources/ACTIVEMQ_README.md), [RabbitMQ](RABBITMQ_README.md) or [IBM MQ](../ibm-mq-resources/IBMMQ_README.md)), restart the server, and verify that the following log line is printed.
 ```
 INFO {org.wso2.carbon.cache.sync.jms.manager.JMSUtils} - Cache Sync JMS Manager Service bundle activated successfully.
 ```
