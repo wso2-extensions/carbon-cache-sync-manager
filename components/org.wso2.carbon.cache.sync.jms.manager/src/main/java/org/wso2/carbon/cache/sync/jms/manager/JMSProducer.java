@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.cache.sync.jms.manager.internal.CacheInvalidationMessageDTO;
 import org.wso2.carbon.caching.impl.CachingConstants;
 import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequest;
+import org.wso2.carbon.caching.impl.clustering.ClusterCacheInvalidationRequestSender;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
@@ -75,6 +76,7 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
     private Session session;
     private MessageProducer producer;
     private static volatile JMSProducer instance;
+    CacheInvalidationRequestSender localClusterSender = new ClusterCacheInvalidationRequestSender();
 
     private JMSProducer() {
 
@@ -115,6 +117,21 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
     @SuppressFBWarnings
     @Override
     public void send(CacheEntryInfo cacheEntryInfo) {
+
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug("Forwarding cache invalidation to local cluster for '" + cacheEntryInfo.getCacheKey()
+                        + "' of the cache '" + cacheEntryInfo.getCacheName() + "' of the cache manager '"
+                        + cacheEntryInfo.getCacheManagerName() + "'");
+            }
+            localClusterSender.send(cacheEntryInfo);
+        } finally {
+            publishToBroker(cacheEntryInfo);
+        }
+    }
+
+    @SuppressFBWarnings
+    private void publishToBroker(CacheEntryInfo cacheEntryInfo) {
 
         String tenantDomain = cacheEntryInfo.getTenantDomain();
         int tenantId = cacheEntryInfo.getTenantId();
@@ -232,13 +249,13 @@ public class JMSProducer implements CacheEntryRemovedListener, CacheEntryUpdated
     @Override
     public void entryRemoved(CacheEntryEvent cacheEntryEvent) throws CacheEntryListenerException {
 
-        send(createCacheInfo(cacheEntryEvent));
+        publishToBroker(createCacheInfo(cacheEntryEvent));
     }
 
     @Override
     public void entryUpdated(CacheEntryEvent cacheEntryEvent) throws CacheEntryListenerException {
 
-        send(createCacheInfo(cacheEntryEvent));
+        publishToBroker(createCacheInfo(cacheEntryEvent));
     }
 
     public static CacheEntryInfo createCacheInfo(CacheEntryEvent cacheEntryEvent) {
